@@ -10,9 +10,14 @@ const Navigation = () => {
     <nav className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <div className="h-10 w-10 rounded-lg bg-gradient-hero flex items-center justify-center">
-            <FileText className="h-6 w-6 text-white" />
+          <div className="w-10 rounded-lg flex items-center justify-center overflow-hidden">
+            <img
+              src="/logo.jpg"
+              alt="iClaim Logo"
+              className="h-6 w-6 object-contain"
+            />
           </div>
+
           <span className="text-xl font-bold bg-gradient-gold bg-clip-text text-transparent">
             iClaim
           </span>
