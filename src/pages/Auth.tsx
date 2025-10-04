@@ -1,48 +1,169 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { supabase } from "@/supabaseClient";
 
 type UserRole = "customer" | "agent" | "admin";
 
-export default function AuthPage() {
+export default function Auth() {
   const navigate = useNavigate();
-  const { user, userRole, loading, signUp, signIn } = useAuth();
 
+  // State
+  const [user, setUser] = useState<any>(null);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [loading, setLoading] = useState(true);
   const [isLogin, setIsLogin] = useState(true);
   const [selectedRole, setSelectedRole] = useState<UserRole>("customer");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  console.log({ user, userRole, loading });
-  // ✅ Proper redirect based on user role
+
+  // Fetch user role from user_roles table
+  const fetchUserRole = async (userId: string) => {
+  const { data, error } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .single();
+
+  console.log("Fetched role data:", data, "Error:", error);
+
+  if (error || !data) {
+    console.warn("No role found for user:", error?.message);
+    setUserRole(null);
+  } else {
+    setUserRole(data.role as UserRole);
+  }
+};
+
+  // Load current user on mount
+  useEffect(() => {
+    
+    const loadUser = async () => {
+      const {
+        data: { user: currentUser },
+      } = await supabase.auth.getUser();
+      console.log("Current user:", currentUser);
+      setUser(currentUser);
+      if (currentUser) await fetchUserRole(currentUser.id);
+      setLoading(false);
+    };
+
+    loadUser();
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        if (currentUser) await fetchUserRole(currentUser.id);
+        else setUserRole(null);
+      }
+    );
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  // Redirect based on role
   useEffect(() => {
     if (!loading && user && userRole) {
-      console.log("✅ Redirecting user with role:", userRole);
-
-      if (userRole === "admin") {
-        navigate("/admin");
-      } else if (userRole === "agent") {
-        navigate("/agent");
-      } else {
-        navigate("/customer");
-      }
+      if (userRole === "admin") navigate("/admin", { replace: true });
+      else if (userRole === "agent") navigate("/agent", { replace: true });
+      else navigate("/customer", { replace: true });
     }
   }, [user, userRole, loading, navigate]);
 
-  const handleAuth = async () => {
-    if (isLogin) {
-      const { error } = await signIn(email, password);
-      if (error) alert(error.message);
-    } else {
-      const { error } = await signUp(email, password, fullName, selectedRole);
-      if (error) alert(error.message);
+  // Sign up with role insertion and immediate login
+  const signUp = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: fullName } },
+      });
+
+      if (error) throw error;
+      const newUser = data.user;
+      if (!newUser) throw new Error("User not created");
+
+      // Insert role
+      const { error: insertError } = await supabase
+        .from("user_roles")
+        .insert([{ user_id: newUser.id, role: selectedRole }]);
+      if (insertError) throw insertError;
+
+      // Immediately sign in the user
+      const { error: loginError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (loginError) throw loginError;
+
+      // onAuthStateChange will handle the navigation
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setLoading(false);
     }
   };
+
+  // Sign in
+  // const signIn = async () => {
+  //   setLoading(true);
+  //   const { error } = await supabase.auth.signInWithPassword({ email, password });
+  //   if (error) alert(error.message);
+  //   setLoading(false);
+  // };
+
+  const signIn = async () => {
+  try {
+    setLoading(true);
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) throw error;
+
+    const user = data?.user;
+    if (!user) throw new Error("Login failed — no user returned");
+
+    // Fetch role immediately after login
+    const { data: roleData, error: roleError } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .single();
+
+    if (roleError || !roleData) {
+      console.error("Role fetch failed:", roleError?.message);
+      alert("Could not find a role for this account.");
+      return;
+    }
+
+    const role = roleData.role as "customer" | "agent" | "admin";
+
+    // Navigate based on role
+    if (role === "admin") navigate("/admin", { replace: true });
+    else if (role === "agent") navigate("/agent", { replace: true });
+    else navigate("/customer", { replace: true });
+
+  } catch (err: any) {
+    alert(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  const handleAuth = () => {
+    if (isLogin) signIn();
+    else signUp();
+  };
+
+  if (loading) return <p className="text-center mt-20">Loading...</p>;
 
   return (
     <div className="flex h-screen items-center justify-center bg-white">
@@ -54,18 +175,22 @@ export default function AuthPage() {
           {isLogin ? "Sign in to your account" : "Create an account"}
         </p>
 
-        {/* ✅ Always visible role tabs */}
-        <Tabs
-          defaultValue={selectedRole}
-          className="mb-6"
-          onValueChange={(v) => setSelectedRole(v as UserRole)}
-        >
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="customer">Customer</TabsTrigger>
-            <TabsTrigger value="agent">Agent</TabsTrigger>
-            <TabsTrigger value="admin">Admin</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        {/* Role tabs */}
+        <div className="mb-6 grid grid-cols-3 gap-2">
+          {(["customer", "agent", "admin"] as UserRole[]).map((role) => (
+            <button
+              key={role}
+              className={`py-2 rounded border ${
+                selectedRole === role
+                  ? "bg-yellow-500 text-white"
+                  : "bg-white text-gray-700"
+              }`}
+              onClick={() => setSelectedRole(role)}
+            >
+              {role.charAt(0).toUpperCase() + role.slice(1)}
+            </button>
+          ))}
+        </div>
 
         <input
           type="email"
@@ -74,7 +199,6 @@ export default function AuthPage() {
           onChange={(e) => setEmail(e.target.value)}
           className="mb-3 w-full rounded border p-2"
         />
-
         <input
           type="password"
           placeholder="Password"
