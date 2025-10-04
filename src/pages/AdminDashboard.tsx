@@ -30,7 +30,7 @@ import ClaimStatusBadge from "@/components/ClaimStatusBadge";
 const mockAgents = [
   {
     id: 1,
-    name: "Sarah Johnson",
+    name: "Vikas varma",
     claimsHandled: 145,
     avgResolutionTime: "2.1 days",
     approvalRate: "94%",
@@ -38,7 +38,7 @@ const mockAgents = [
   },
   {
     id: 2,
-    name: "Michael Chen",
+    name: "hariom singh",
     claimsHandled: 132,
     avgResolutionTime: "2.4 days",
     approvalRate: "91%",
@@ -46,7 +46,7 @@ const mockAgents = [
   },
   {
     id: 3,
-    name: "Emily Rodriguez",
+    name: "rahul sharma",
     claimsHandled: 158,
     avgResolutionTime: "1.9 days",
     approvalRate: "96%",
@@ -58,24 +58,24 @@ const mockAgents = [
 const mockClients = [
   {
     id: 1,
-    name: "John Doe",
-    agent: "Sarah Johnson",
+    name: "manvi sharma",
+    agent: "Vikas varma",
     policyNo: "POL-2024-001",
     claimCount: 3,
     riskLevel: "Low",
   },
   {
     id: 2,
-    name: "Jane Smith",
-    agent: "Michael Chen",
+    name: "kajal verma",
+    agent: "Hariom singh",
     policyNo: "POL-2024-002",
     claimCount: 1,
     riskLevel: "Low",
   },
   {
     id: 3,
-    name: "Mike Johnson",
-    agent: "Emily Rodriguez",
+    name: "dimple gupta",
+    agent: "rahul sharma",
     policyNo: "POL-2024-003",
     claimCount: 5,
     riskLevel: "High",
@@ -86,24 +86,24 @@ const mockClients = [
 const mockClaims = [
   {
     id: "CLM123456",
-    client: "John Doe",
-    agent: "Sarah Johnson",
+    client: "Manvi Sharma",
+    agent: "Vikas Varma",
     status: "in-progress" as const,
     fraudScore: 12,
     date: "2025-09-28",
   },
   {
     id: "CLM123457",
-    client: "Jane Smith",
-    agent: "Michael Chen",
+    client: "kajal verma",
+    agent: "Hariom Singh",
     status: "pending" as const,
     fraudScore: 8,
     date: "2025-09-27",
   },
   {
     id: "CLM123458",
-    client: "Mike Johnson",
-    agent: "Emily Rodriguez",
+    client: "dimple gupta",
+    agent: "rahul sharma",
     status: "approved" as const,
     fraudScore: 65,
     date: "2025-09-26",

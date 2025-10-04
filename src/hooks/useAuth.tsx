@@ -13,37 +13,34 @@ export const useAuth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        // Fetch user role when authenticated
-        if (session?.user) {
-          setTimeout(() => {
-            fetchUserRole(session.user.id);
-          }, 0);
-        } else {
-          setUserRole(null);
-          setLoading(false);
-        }
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Check for existing session on mount
+    const initSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      const session = data.session;
       setSession(session);
       setUser(session?.user ?? null);
-      
+      if (session?.user) {
+        await fetchUserRole(session.user.id);
+      } else {
+        setLoading(false);
+      }
+    };
+
+    initSession();
+
+    // Listen for auth state changes
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
       if (session?.user) {
         fetchUserRole(session.user.id);
       } else {
+        setUserRole(null);
         setLoading(false);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => listener.subscription.unsubscribe();
   }, []);
 
   const fetchUserRole = async (userId: string) => {
@@ -52,13 +49,19 @@ export const useAuth = () => {
         .from("user_roles")
         .select("role")
         .eq("user_id", userId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      setUserRole(data.role as UserRole);
+
+      if (data?.role) {
+        setUserRole(data.role as UserRole);
+      } else {
+        console.warn("⚠️ No role found for user:", userId);
+        setUserRole("customer");
+      }
     } catch (error) {
       console.error("Error fetching user role:", error);
-      setUserRole("customer"); // Default to customer
+      setUserRole("customer");
     } finally {
       setLoading(false);
     }
@@ -66,33 +69,36 @@ export const useAuth = () => {
 
   const signUp = async (email: string, password: string, fullName: string, role: UserRole) => {
     const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: redirectUrl,
         data: {
           full_name: fullName,
-          role: role,
+          role, // this goes into raw_user_meta_data and is used by your trigger
         },
       },
     });
-    
-    return { error };
+    return { data, error };
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    
+
+    if (!error && data.user) {
+      await fetchUserRole(data.user.id);
+    }
+
     return { error };
   };
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    setUser(null);
     setUserRole(null);
     navigate("/auth");
   };

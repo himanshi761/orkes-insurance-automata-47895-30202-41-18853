@@ -14,7 +14,7 @@ const Navigation = () => {
             <FileText className="h-6 w-6 text-white" />
           </div>
           <span className="text-xl font-bold bg-gradient-gold bg-clip-text text-transparent">
-            QuickClaim
+            iClaim
           </span>
         </Link>
 
