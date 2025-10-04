@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import Navigation from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -70,10 +72,26 @@ const mockClaims = [
 
 const AgentDashboard = () => {
   const { toast } = useToast();
+  const { user, userRole, loading } = useAuth();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [selectedClaim, setSelectedClaim] = useState<typeof mockClaims[0] | null>(null);
   const [actionNotes, setActionNotes] = useState("");
+
+  useEffect(() => {
+    if (!loading && (!user || userRole !== "agent")) {
+      navigate("/auth");
+    }
+  }, [user, userRole, loading, navigate]);
+
+  if (loading) {
+    return <div className="min-h-screen bg-background flex items-center justify-center">Loading...</div>;
+  }
+
+  if (!user || userRole !== "agent") {
+    return null;
+  }
 
   const handleApprove = () => {
     toast({

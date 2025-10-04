@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import Navigation from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -61,6 +62,22 @@ const mockClaims = [
 
 const CustomerDashboard = () => {
   const [selectedClaim, setSelectedClaim] = useState<typeof mockClaims[0] | null>(null);
+  const { user, userRole, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && (!user || userRole !== "customer")) {
+      navigate("/auth");
+    }
+  }, [user, userRole, loading, navigate]);
+
+  if (loading) {
+    return <div className="min-h-screen bg-background flex items-center justify-center">Loading...</div>;
+  }
+
+  if (!user || userRole !== "customer") {
+    return null;
+  }
 
   const stats = {
     total: mockClaims.length,

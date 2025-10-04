@@ -21,14 +21,14 @@ const Home = () => {
               File claims in minutes, get approved in hours. Powered by AI and smart workflow automation.
             </p>
             <div className="flex gap-4 justify-center">
-              <Link to="/file-claim">
+              <Link to="/auth">
                 <Button size="lg" className="bg-gradient-hero text-lg px-8">
-                  File a Claim
+                  Get Started
                 </Button>
               </Link>
-              <Link to="/customer">
+              <Link to="/auth">
                 <Button size="lg" variant="outline" className="text-lg px-8">
-                  Track Your Claim
+                  Sign In
                 </Button>
               </Link>
             </div>
