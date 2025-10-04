@@ -93,7 +93,9 @@ const CustomerDashboard = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="mb-8 flex justify-between items-center animate-fade-in">
           <div>
-            <h1 className="text-4xl font-bold mb-2">My Claims</h1>
+            <h1 className="text-4xl font-bold mb-2 bg-gradient-gold bg-clip-text text-transparent">
+              My Claims
+            </h1>
             <p className="text-muted-foreground">Track and manage your insurance claims</p>
           </div>
           <Link to="/file-claim">
@@ -106,10 +108,10 @@ const CustomerDashboard = () => {
 
         {/* Summary Cards */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card className="p-6">
+          <Card className="p-6 border-primary/20 hover:shadow-gold transition-all">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                <FileText className="h-6 w-6 text-primary" />
+              <div className="w-12 h-12 bg-gradient-gold rounded-full flex items-center justify-center shadow-gold">
+                <FileText className="h-6 w-6 text-foreground" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Claims</p>
@@ -118,10 +120,10 @@ const CustomerDashboard = () => {
             </div>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-6 border-primary/20 hover:shadow-gold transition-all">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-warning/10 rounded-full flex items-center justify-center">
-                <Calendar className="h-6 w-6 text-warning" />
+              <div className="w-12 h-12 bg-gradient-gold rounded-full flex items-center justify-center shadow-gold">
+                <Calendar className="h-6 w-6 text-foreground" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">In Progress</p>
@@ -130,10 +132,10 @@ const CustomerDashboard = () => {
             </div>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-6 border-primary/20 hover:shadow-gold transition-all">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-success/10 rounded-full flex items-center justify-center">
-                <FileText className="h-6 w-6 text-success" />
+              <div className="w-12 h-12 bg-gradient-gold rounded-full flex items-center justify-center shadow-gold">
+                <FileText className="h-6 w-6 text-foreground" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Approved</p>
@@ -142,10 +144,10 @@ const CustomerDashboard = () => {
             </div>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-6 border-primary/20 hover:shadow-gold transition-all">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center">
-                <DollarSign className="h-6 w-6 text-accent" />
+              <div className="w-12 h-12 bg-gradient-gold rounded-full flex items-center justify-center shadow-gold">
+                <DollarSign className="h-6 w-6 text-foreground" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Amount</p>
@@ -170,7 +172,7 @@ const CustomerDashboard = () => {
                   <p className="text-sm">{claim.description}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold text-primary">
+                  <p className="text-2xl font-bold bg-gradient-gold bg-clip-text text-transparent">
                     ${claim.amount.toLocaleString()}
                   </p>
                   <p className="text-sm text-muted-foreground">{claim.date}</p>

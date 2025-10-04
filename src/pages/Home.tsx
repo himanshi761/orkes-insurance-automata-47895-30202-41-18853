@@ -14,7 +14,7 @@ const Home = () => {
         <div className="absolute inset-0 bg-gradient-hero opacity-5" />
         <div className="container mx-auto px-4 py-24 relative">
           <div className="max-w-3xl mx-auto text-center animate-fade-in">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-gold bg-clip-text text-transparent">
               Insurance Claims, Automated & Intelligent
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
@@ -41,9 +41,9 @@ const Home = () => {
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">Why Choose QuickClaim?</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="p-6 text-center hover:shadow-medium transition-all">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Zap className="h-6 w-6 text-primary" />
+            <Card className="p-6 text-center hover:shadow-gold transition-all border-primary/20">
+              <div className="w-12 h-12 bg-gradient-gold rounded-full flex items-center justify-center mx-auto mb-4 shadow-gold">
+                <Zap className="h-6 w-6 text-foreground" />
               </div>
               <h3 className="font-semibold mb-2">Lightning Fast</h3>
               <p className="text-sm text-muted-foreground">
@@ -51,9 +51,9 @@ const Home = () => {
               </p>
             </Card>
 
-            <Card className="p-6 text-center hover:shadow-medium transition-all">
-              <div className="w-12 h-12 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Brain className="h-6 w-6 text-success" />
+            <Card className="p-6 text-center hover:shadow-gold transition-all border-primary/20">
+              <div className="w-12 h-12 bg-gradient-gold rounded-full flex items-center justify-center mx-auto mb-4 shadow-gold">
+                <Brain className="h-6 w-6 text-foreground" />
               </div>
               <h3 className="font-semibold mb-2">AI-Powered</h3>
               <p className="text-sm text-muted-foreground">
@@ -61,9 +61,9 @@ const Home = () => {
               </p>
             </Card>
 
-            <Card className="p-6 text-center hover:shadow-medium transition-all">
-              <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Clock className="h-6 w-6 text-accent" />
+            <Card className="p-6 text-center hover:shadow-gold transition-all border-primary/20">
+              <div className="w-12 h-12 bg-gradient-gold rounded-full flex items-center justify-center mx-auto mb-4 shadow-gold">
+                <Clock className="h-6 w-6 text-foreground" />
               </div>
               <h3 className="font-semibold mb-2">Real-Time Updates</h3>
               <p className="text-sm text-muted-foreground">
@@ -71,9 +71,9 @@ const Home = () => {
               </p>
             </Card>
 
-            <Card className="p-6 text-center hover:shadow-medium transition-all">
-              <div className="w-12 h-12 bg-warning/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="h-6 w-6 text-warning" />
+            <Card className="p-6 text-center hover:shadow-gold transition-all border-primary/20">
+              <div className="w-12 h-12 bg-gradient-gold rounded-full flex items-center justify-center mx-auto mb-4 shadow-gold">
+                <Shield className="h-6 w-6 text-foreground" />
               </div>
               <h3 className="font-semibold mb-2">Secure & Trusted</h3>
               <p className="text-sm text-muted-foreground">
@@ -90,7 +90,7 @@ const Home = () => {
           <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
           <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-hero rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
+              <div className="w-16 h-16 bg-gradient-gold rounded-full flex items-center justify-center mx-auto mb-4 text-foreground text-2xl font-bold shadow-gold">
                 1
               </div>
               <h3 className="font-semibold mb-2">Submit Your Claim</h3>
@@ -100,7 +100,7 @@ const Home = () => {
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-hero rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
+              <div className="w-16 h-16 bg-gradient-gold rounded-full flex items-center justify-center mx-auto mb-4 text-foreground text-2xl font-bold shadow-gold">
                 2
               </div>
               <h3 className="font-semibold mb-2">AI Processing</h3>
@@ -110,7 +110,7 @@ const Home = () => {
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-hero rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
+              <div className="w-16 h-16 bg-gradient-gold rounded-full flex items-center justify-center mx-auto mb-4 text-foreground text-2xl font-bold shadow-gold">
                 3
               </div>
               <h3 className="font-semibold mb-2">Get Approved</h3>

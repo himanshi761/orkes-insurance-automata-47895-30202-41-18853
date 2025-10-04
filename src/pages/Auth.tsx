@@ -100,7 +100,9 @@ const Auth = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Insurance Claims Portal</h1>
+          <h1 className="text-3xl font-bold mb-2 bg-gradient-gold bg-clip-text text-transparent">
+            Insurance Claims Portal
+          </h1>
           <p className="text-muted-foreground">
             {isLogin ? "Sign in to your account" : "Create your account"}
           </p>

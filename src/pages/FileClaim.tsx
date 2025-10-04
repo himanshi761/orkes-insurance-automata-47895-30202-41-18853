@@ -38,7 +38,9 @@ const FileClaim = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-8 animate-fade-in">
-            <h1 className="text-4xl font-bold mb-2">File a New Claim</h1>
+            <h1 className="text-4xl font-bold mb-2 bg-gradient-gold bg-clip-text text-transparent">
+              File a New Claim
+            </h1>
             <p className="text-muted-foreground">
               Complete the form below to submit your insurance claim
             </p>

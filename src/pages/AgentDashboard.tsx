@@ -132,16 +132,18 @@ const AgentDashboard = () => {
       
       <div className="container mx-auto px-4 py-12">
         <div className="mb-8 animate-fade-in">
-          <h1 className="text-4xl font-bold mb-2">Agent Dashboard</h1>
+          <h1 className="text-4xl font-bold mb-2 bg-gradient-gold bg-clip-text text-transparent">
+            Agent Dashboard
+          </h1>
           <p className="text-muted-foreground">Review and process insurance claims</p>
         </div>
 
         {/* Summary Cards */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card className="p-6">
+          <Card className="p-6 border-primary/20 hover:shadow-gold transition-all">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-warning/10 rounded-full flex items-center justify-center">
-                <AlertCircle className="h-6 w-6 text-warning" />
+              <div className="w-12 h-12 bg-gradient-gold rounded-full flex items-center justify-center shadow-gold">
+                <AlertCircle className="h-6 w-6 text-foreground" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Pending Review</p>
@@ -150,10 +152,10 @@ const AgentDashboard = () => {
             </div>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-6 border-primary/20 hover:shadow-gold transition-all">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center">
-                <FileText className="h-6 w-6 text-accent" />
+              <div className="w-12 h-12 bg-gradient-gold rounded-full flex items-center justify-center shadow-gold">
+                <FileText className="h-6 w-6 text-foreground" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">In Progress</p>
@@ -162,10 +164,10 @@ const AgentDashboard = () => {
             </div>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-6 border-primary/20 hover:shadow-gold transition-all">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-destructive/10 rounded-full flex items-center justify-center">
-                <AlertCircle className="h-6 w-6 text-destructive" />
+              <div className="w-12 h-12 bg-gradient-gold rounded-full flex items-center justify-center shadow-gold">
+                <AlertCircle className="h-6 w-6 text-foreground" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">High Risk</p>
@@ -174,10 +176,10 @@ const AgentDashboard = () => {
             </div>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-6 border-primary/20 hover:shadow-gold transition-all">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-success/10 rounded-full flex items-center justify-center">
-                <TrendingUp className="h-6 w-6 text-success" />
+              <div className="w-12 h-12 bg-gradient-gold rounded-full flex items-center justify-center shadow-gold">
+                <TrendingUp className="h-6 w-6 text-foreground" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Avg Time</p>

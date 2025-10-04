@@ -73,11 +73,13 @@ export default {
       },
       backgroundImage: {
         'gradient-hero': 'var(--gradient-hero)',
+        'gradient-gold': 'var(--gradient-gold)',
         'gradient-card': 'var(--gradient-card)',
       },
       boxShadow: {
         'soft': 'var(--shadow-soft)',
         'medium': 'var(--shadow-medium)',
+        'gold': 'var(--shadow-gold)',
       },
       keyframes: {
         "accordion-down": {

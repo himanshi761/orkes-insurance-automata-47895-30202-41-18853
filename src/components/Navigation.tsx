@@ -13,7 +13,7 @@ const Navigation = () => {
           <div className="h-10 w-10 rounded-lg bg-gradient-hero flex items-center justify-center">
             <FileText className="h-6 w-6 text-white" />
           </div>
-          <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <span className="text-xl font-bold bg-gradient-gold bg-clip-text text-transparent">
             QuickClaim
           </span>
         </Link>
