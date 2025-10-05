@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/supabaseClient";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import Navigation from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
@@ -14,89 +15,80 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-// Mock data
-const mockClaims = [
-  {
-    id: "CLM123456",
-    type: "Auto Insurance",
-    description: "Rear-end collision on Highway 101",
-    date: "2025-09-28",
-    amount: 4500,
-    status: "in-progress" as const,
-    workflowStep: 3,
-    aiInsights: {
-      damageScore: 75,
-      fraudScore: 12,
-      estimatedPayout: 4200,
-    },
-  },
-  {
-    id: "CLM123455",
-    type: "Property Insurance",
-    description: "Water damage from pipe burst",
-    date: "2025-09-15",
-    amount: 12000,
-    status: "approved" as const,
-    workflowStep: 5,
-    aiInsights: {
-      damageScore: 92,
-      fraudScore: 5,
-      estimatedPayout: 11500,
-    },
-  },
-  {
-    id: "CLM123454",
-    type: "Health Insurance",
-    description: "Emergency room visit",
-    date: "2025-09-01",
-    amount: 2800,
-    status: "paid" as const,
-    workflowStep: 5,
-    aiInsights: {
-      damageScore: 88,
-      fraudScore: 3,
-      estimatedPayout: 2800,
-    },
-  },
-];
-
 const CustomerDashboard = () => {
-  const [selectedClaim, setSelectedClaim] = useState<typeof mockClaims[0] | null>(null);
+  const [claims, setClaims] = useState<any[]>([]);
+  const [selectedClaim, setSelectedClaim] = useState<any | null>(null);
+  const [loadingClaims, setLoadingClaims] = useState(true);
   const { user, userRole, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
+  // Redirect if not a logged-in customer
   useEffect(() => {
     if (!loading && (!user || userRole !== "customer")) {
       navigate("/auth");
     }
   }, [user, userRole, loading, navigate]);
 
-  if (loading) {
-    return <div className="min-h-screen bg-background flex items-center justify-center">Loading...</div>;
+  // Fetch claims from Supabase
+  const fetchClaims = async () => {
+    setLoadingClaims(true);
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData?.user?.id;
+    if (!userId) return;
+
+    const { data, error } = await supabase
+      .from("claims")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching claims:", error.message);
+    } else {
+      setClaims(data || []);
+    }
+    setLoadingClaims(false);
+  };
+
+  // Fetch on mount and also refetch if coming back from filing a claim
+  useEffect(() => {
+    fetchClaims();
+  }, [location.state]);
+
+  if (loading || loadingClaims) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        Loading...
+      </div>
+    );
   }
 
   if (!user || userRole !== "customer") {
     return null;
   }
 
+  // Calculate summary stats dynamically
   const stats = {
-    total: mockClaims.length,
-    inProgress: mockClaims.filter(c => c.status === "in-progress").length,
-    approved: mockClaims.filter(c => c.status === "approved" || c.status === "paid").length,
-    totalAmount: mockClaims.reduce((sum, c) => sum + c.amount, 0),
+    total: claims.length,
+    inProgress: claims.filter((c) => c.status === "in-progress").length,
+    approved: claims.filter((c) => c.status === "approved" || c.status === "paid").length,
+    totalAmount: claims.reduce((sum, c) => sum + (Number(c.amount) || 0), 0),
   };
 
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      
+
       <div className="container mx-auto px-4 py-12">
         <div className="mb-8 flex justify-between items-center animate-fade-in">
           <div>
             <h1 className="text-4xl font-bold mb-2 bg-gradient-gold bg-clip-text text-transparent">
               My Claims
             </h1>
-            <p className="text-muted-foreground">Track and manage your insurance claims</p>
+            <p className="text-muted-foreground">
+              Track and manage your insurance claims
+            </p>
           </div>
           <Link to="/file-claim">
             <Button className="bg-gradient-hero">
@@ -151,7 +143,9 @@ const CustomerDashboard = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Amount</p>
-                <p className="text-2xl font-bold">${stats.totalAmount.toLocaleString()}</p>
+                <p className="text-2xl font-bold">
+                  ₹{stats.totalAmount.toLocaleString()}
+                </p>
               </div>
             </div>
           </Card>
@@ -160,38 +154,46 @@ const CustomerDashboard = () => {
         {/* Claims List */}
         <div className="space-y-4">
           <h2 className="text-2xl font-bold mb-4">Recent Claims</h2>
-          {mockClaims.map((claim) => (
-            <Card key={claim.id} className="p-6 hover:shadow-medium transition-all">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-semibold">{claim.id}</h3>
-                    <ClaimStatusBadge status={claim.status} />
+          {claims.length === 0 ? (
+            <p className="text-muted-foreground">No claims found yet.</p>
+          ) : (
+            claims.map((claim) => (
+              <Card
+                key={claim.id}
+                className="p-6 hover:shadow-medium transition-all"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+
+                      <h3 className="text-lg font-semibold"><b>{claim.type} Insurance</b></h3>
+                      <ClaimStatusBadge status={claim.status} />
+                    </div>
+                    <p className="text-muted-foreground mb-1">{claim.id}</p>
+                    <p className="text-sm">{claim.description}</p>
                   </div>
-                  <p className="text-muted-foreground mb-1">{claim.type}</p>
-                  <p className="text-sm">{claim.description}</p>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold bg-gradient-gold bg-clip-text text-transparent">
+                      ₹{claim.amount?.toLocaleString()}
+                    </p>
+                    <p className="text-sm text-muted-foreground">{claim.date}</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold bg-gradient-gold bg-clip-text text-transparent">
-                    ${claim.amount.toLocaleString()}
-                  </p>
-                  <p className="text-sm text-muted-foreground">{claim.date}</p>
+
+                <WorkflowProgress currentStep={claim.workflow_step || 1} />
+
+                <div className="flex justify-end mt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setSelectedClaim(claim)}
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    View Details
+                  </Button>
                 </div>
-              </div>
-
-              <WorkflowProgress currentStep={claim.workflowStep} />
-
-              <div className="flex justify-end mt-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setSelectedClaim(claim)}
-                >
-                  <Eye className="h-4 w-4 mr-2" />
-                  View Details
-                </Button>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            ))
+          )}
         </div>
       </div>
 
@@ -199,8 +201,11 @@ const CustomerDashboard = () => {
       <Dialog open={!!selectedClaim} onOpenChange={() => setSelectedClaim(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Claim Details - {selectedClaim?.id}</DialogTitle>
+            <DialogTitle>
+              Claim Details - {selectedClaim?.claim_id || selectedClaim?.id}
+            </DialogTitle>
           </DialogHeader>
+
           {selectedClaim && (
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
@@ -217,8 +222,12 @@ const CustomerDashboard = () => {
                   <p className="font-semibold">{selectedClaim.date}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Claimed Amount</p>
-                  <p className="font-semibold">${selectedClaim.amount.toLocaleString()}</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Claimed Amount
+                  </p>
+                  <p className="font-semibold">
+                    ${selectedClaim.amount?.toLocaleString()}
+                  </p>
                 </div>
               </div>
 
@@ -231,27 +240,31 @@ const CustomerDashboard = () => {
                 <p className="font-semibold mb-3">AI Analysis</p>
                 <div className="grid grid-cols-3 gap-4">
                   <Card className="p-4 text-center">
-                    <p className="text-sm text-muted-foreground mb-1">Damage Score</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Damage Score
+                    </p>
                     <p className="text-2xl font-bold text-primary">
-                      {selectedClaim.aiInsights.damageScore}%
+                      {selectedClaim.damage_score ?? 0}%
                     </p>
                   </Card>
                   <Card className="p-4 text-center">
                     <p className="text-sm text-muted-foreground mb-1">Fraud Risk</p>
                     <p className="text-2xl font-bold text-success">
-                      {selectedClaim.aiInsights.fraudScore}%
+                      {selectedClaim.fraud_score ?? 0}%
                     </p>
                   </Card>
                   <Card className="p-4 text-center">
-                    <p className="text-sm text-muted-foreground mb-1">Est. Payout</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Est. Payout
+                    </p>
                     <p className="text-2xl font-bold text-accent">
-                      ${selectedClaim.aiInsights.estimatedPayout.toLocaleString()}
+                      ₹{selectedClaim.estimated_payout?.toLocaleString()}
                     </p>
                   </Card>
                 </div>
               </div>
 
-              <WorkflowProgress currentStep={selectedClaim.workflowStep} />
+              <WorkflowProgress currentStep={selectedClaim.workflow_step || 1} />
             </div>
           )}
         </DialogContent>

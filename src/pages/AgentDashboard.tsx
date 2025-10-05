@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/supabaseClient";
 import { useAuth } from "@/hooks/useAuth";
 import Navigation from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
@@ -33,50 +34,16 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 
-// Mock data
-const mockClaims = [
-  {
-    id: "CLM123456",
-    customerName: "John Doe",
-    type: "Auto Insurance",
-    status: "pending" as const,
-    date: "2025-09-28",
-    amount: 4500,
-    fraudScore: 12,
-    workflowStep: 3,
-    description: "Rear-end collision on Highway 101",
-  },
-  {
-    id: "CLM123457",
-    customerName: "Jane Smith",
-    type: "Property Insurance",
-    status: "in-progress" as const,
-    date: "2025-09-27",
-    amount: 8200,
-    fraudScore: 8,
-    workflowStep: 2,
-    description: "Storm damage to roof",
-  },
-  {
-    id: "CLM123458",
-    customerName: "Mike Johnson",
-    type: "Health Insurance",
-    status: "pending" as const,
-    date: "2025-09-26",
-    amount: 3400,
-    fraudScore: 45,
-    workflowStep: 3,
-    description: "Medical treatment",
-  },
-];
-
 const AgentDashboard = () => {
   const { toast } = useToast();
   const { user, userRole, loading } = useAuth();
   const navigate = useNavigate();
+
+  const [claims, setClaims] = useState<any[]>([]);
+  const [usersMap, setUsersMap] = useState<Record<string, string>>({}); // user_id -> name
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
-  const [selectedClaim, setSelectedClaim] = useState<typeof mockClaims[0] | null>(null);
+  const [selectedClaim, setSelectedClaim] = useState<any | null>(null);
   const [actionNotes, setActionNotes] = useState("");
 
   useEffect(() => {
@@ -85,58 +52,104 @@ const AgentDashboard = () => {
     }
   }, [user, userRole, loading, navigate]);
 
-  if (loading) {
-    return <div className="min-h-screen bg-background flex items-center justify-center">Loading...</div>;
-  }
+  // Fetch claims and users
+ // Fetch claims and users
+useEffect(() => {
+  const fetchClaimsAndUsers = async () => {
+    const { data: claimsData, error: claimsError } = await supabase
+      .from("claims")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-  if (!user || userRole !== "agent") {
-    return null;
-  }
+    if (claimsError) {
+      console.error("Error fetching claims:", claimsError.message);
+      return;
+    }
 
-  const handleApprove = () => {
-    toast({
-      title: "Claim Approved",
-      description: `Claim ${selectedClaim?.id} has been approved for payment.`,
-    });
-    setSelectedClaim(null);
-    setActionNotes("");
+    setClaims(claimsData || []);
+
+    // Extract unique user_ids
+    const userIds = Array.from(new Set(claimsData?.map(c => c.user_id)));
+    if (userIds.length === 0) return;
+
+    const { data: usersData, error: usersError } = await supabase
+      .from("users")
+      .select("id, full_name") // <-- make sure your users table has full_name
+      .in("id", userIds);
+
+    if (usersError) {
+      console.error("Error fetching users:", usersError.message);
+      return;
+    }
+
+    const map: Record<string, string> = {};
+    usersData?.forEach(u => { map[u.id] = u.full_name || u.id; });
+    setUsersMap(map);
   };
 
-  const handleReject = () => {
-    toast({
-      title: "Claim Rejected",
-      description: `Claim ${selectedClaim?.id} has been rejected.`,
-      variant: "destructive",
-    });
-    setSelectedClaim(null);
-    setActionNotes("");
+  fetchClaimsAndUsers();
+}, []);
+
+  const handleApprove = async () => {
+    if (!selectedClaim) return;
+
+    const { error } = await supabase
+      .from("claims")
+      .update({ status: "approved", agent_notes: actionNotes })
+      .eq("id", selectedClaim.id);
+
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Claim Approved", description: `Claim ${selectedClaim.claim_id} approved.` });
+      setSelectedClaim(null);
+      setActionNotes("");
+      setClaims(prev => prev.map(c => c.id === selectedClaim.id ? { ...c, status: "approved" } : c));
+    }
   };
 
-  const filteredClaims = mockClaims.filter(claim => {
-    const matchesSearch = claim.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         claim.customerName.toLowerCase().includes(searchTerm.toLowerCase());
+  const handleReject = async () => {
+    if (!selectedClaim) return;
+
+    const { error } = await supabase
+      .from("claims")
+      .update({ status: "rejected", agent_notes: actionNotes })
+      .eq("id", selectedClaim.id);
+
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Claim Rejected", description: `Claim ${selectedClaim.claim_id} rejected.`, variant: "destructive" });
+      setSelectedClaim(null);
+      setActionNotes("");
+      setClaims(prev => prev.map(c => c.id === selectedClaim.id ? { ...c, status: "rejected" } : c));
+    }
+  };
+
+  const filteredClaims = claims.filter(claim => {
+    const customerName = usersMap[claim.user_id] || claim.user_id;
+    const matchesSearch = claim.claim_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          customerName?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === "all" || claim.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
 
   const stats = {
-    pending: mockClaims.filter(c => c.status === "pending").length,
-    inProgress: mockClaims.filter(c => c.status === "in-progress").length,
-    highRisk: mockClaims.filter(c => c.fraudScore > 40).length,
-    avgProcessingTime: "2.4 days",
+    pending: claims.filter(c => c.status === "pending").length,
+    inProgress: claims.filter(c => c.status === "in-progress").length,
+    highRisk: claims.filter(c => c.fraud_score > 40).length,
+    avgProcessingTime: "2.4 days", // optionally calculate dynamically
   };
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (!user || userRole !== "agent") return null;
 
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      
       <div className="container mx-auto px-4 py-12">
-        <div className="mb-8 animate-fade-in">
-          <h1 className="text-4xl font-bold mb-2 bg-gradient-gold bg-clip-text text-transparent">
-            Agent Dashboard
-          </h1>
-          <p className="text-muted-foreground">Review and process insurance claims</p>
-        </div>
+        <h1 className="text-4xl font-bold mb-2 bg-gradient-gold bg-clip-text text-transparent">Agent Dashboard</h1>
+        <p className="text-muted-foreground mb-6">Review and process insurance claims</p>
 
         {/* Summary Cards */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
@@ -234,25 +247,20 @@ const AgentDashboard = () => {
             <TableBody>
               {filteredClaims.map((claim) => (
                 <TableRow key={claim.id}>
-                  <TableCell className="font-medium">{claim.id}</TableCell>
-                  <TableCell>{claim.customerName}</TableCell>
+                  <TableCell className="font-medium">{claim.claim_id || claim.id}</TableCell>
+                  <TableCell>{usersMap[claim.user_id] || claim.user_id}</TableCell>
+
+                  {/* <TableCell className="font-medium">{claim.claim_id}</TableCell> */}
+                  {/* <TableCell>{usersMap[claim.user_id] || claim.user_id}</TableCell> */}
                   <TableCell>{claim.type}</TableCell>
-                  <TableCell>
-                    <ClaimStatusBadge status={claim.status} />
-                  </TableCell>
-                  <TableCell>${claim.amount.toLocaleString()}</TableCell>
-                  <TableCell>
-                    <span className={claim.fraudScore > 40 ? "text-destructive font-semibold" : "text-success"}>
-                      {claim.fraudScore}%
-                    </span>
+                  <TableCell><ClaimStatusBadge status={claim.status} /></TableCell>
+                  <TableCell>₹{claim.amount?.toLocaleString()}</TableCell>
+                  <TableCell className={claim.fraud_score > 40 ? "text-destructive font-semibold" : "text-success"}>
+                    {claim.fraud_score}%
                   </TableCell>
                   <TableCell>{claim.date}</TableCell>
                   <TableCell>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setSelectedClaim(claim)}
-                    >
+                    <Button size="sm" variant="outline" onClick={() => setSelectedClaim(claim)}>
                       Review
                     </Button>
                   </TableCell>
@@ -261,70 +269,81 @@ const AgentDashboard = () => {
             </TableBody>
           </Table>
         </Card>
+
+        {/* Claim Review Dialog */}
+        <Dialog open={!!selectedClaim} onOpenChange={() => setSelectedClaim(null)}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>Review Claim - {selectedClaim?.claim_id}</DialogTitle>
+            </DialogHeader>
+            {selectedClaim && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Customer</p>
+                    <p className="font-semibold">{usersMap[selectedClaim.user_id] || selectedClaim.user_id}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Type</p>
+                    <p className="font-semibold">{selectedClaim.type}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Amount</p>
+                    <p className="font-semibold text-primary">₹rs{selectedClaim.amount?.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Fraud Score</p>
+                    <p className={`font-semibold ${selectedClaim.fraud_score > 40 ? "text-destructive" : "text-success"}`}>
+                      {selectedClaim.fraud_score}%
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">Description</p>
+                  <p>{selectedClaim.description}</p>
+                </div>
+
+                <WorkflowProgress currentStep={selectedClaim.workflow_step} />
+
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">AI Analysis</p>
+                  <div className="grid grid-cols-3 gap-4">
+                    <Card className="p-4 text-center">
+                      <p className="text-sm text-muted-foreground mb-1">Damage Score</p>
+                      <p className="text-2xl font-bold text-primary">{selectedClaim.damage_score ?? 0}%</p>
+                    </Card>
+                    <Card className="p-4 text-center">
+                      <p className="text-sm text-muted-foreground mb-1">Estimated Payout</p>
+                      <p className="text-2xl font-bold text-accent">${selectedClaim.estimated_payout?.toLocaleString() ?? 0}</p>
+                    </Card>
+                    <Card className="p-4 text-center">
+                      <p className="text-sm text-muted-foreground mb-1">Fraud Risk</p>
+                      <p className="text-2xl font-bold text-success">{selectedClaim.fraud_score ?? 0}%</p>
+                    </Card>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">Notes</p>
+                  <Textarea
+                    placeholder="Add your review notes..."
+                    value={actionNotes}
+                    onChange={(e) => setActionNotes(e.target.value)}
+                    rows={4}
+                  />
+                </div>
+              </div>
+            )}
+
+            <DialogFooter className="flex gap-2">
+              <Button variant="outline" onClick={() => setSelectedClaim(null)}>Cancel</Button>
+              <Button variant="destructive" onClick={handleReject}><XCircle className="h-4 w-4 mr-2"/> Reject</Button>
+              <Button className="bg-success hover:bg-success/90" onClick={handleApprove}><CheckCircle className="h-4 w-4 mr-2"/> Approve</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
-
-      {/* Claim Review Dialog */}
-      <Dialog open={!!selectedClaim} onOpenChange={() => setSelectedClaim(null)}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Review Claim - {selectedClaim?.id}</DialogTitle>
-          </DialogHeader>
-          {selectedClaim && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Customer</p>
-                  <p className="font-semibold">{selectedClaim.customerName}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Type</p>
-                  <p className="font-semibold">{selectedClaim.type}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Amount</p>
-                  <p className="font-semibold text-primary">${selectedClaim.amount.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Fraud Score</p>
-                  <p className={`font-semibold ${selectedClaim.fraudScore > 40 ? 'text-destructive' : 'text-success'}`}>
-                    {selectedClaim.fraudScore}%
-                  </p>
-                </div>
-              </div>
-
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">Description</p>
-                <p>{selectedClaim.description}</p>
-              </div>
-
-              <WorkflowProgress currentStep={selectedClaim.workflowStep} />
-
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">Notes</p>
-                <Textarea
-                  placeholder="Add your review notes..."
-                  value={actionNotes}
-                  onChange={(e) => setActionNotes(e.target.value)}
-                  rows={4}
-                />
-              </div>
-            </div>
-          )}
-          <DialogFooter className="flex gap-2">
-            <Button variant="outline" onClick={() => setSelectedClaim(null)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleReject}>
-              <XCircle className="h-4 w-4 mr-2" />
-              Reject
-            </Button>
-            <Button className="bg-success hover:bg-success/90" onClick={handleApprove}>
-              <CheckCircle className="h-4 w-4 mr-2" />
-              Approve
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
