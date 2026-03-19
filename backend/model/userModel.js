@@ -1,0 +1,40 @@
+import mongoose from "mongoose";
+
+const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    index:true
+  },
+  password: {
+    type: String,
+    required: true
+  },
+
+  role: {
+    type: String,
+    enum: ["user", "agent", "admin"],
+    default: "user"
+  },
+
+  insuranceData: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
+  },
+
+  claims: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Claim"
+    }
+  ]
+
+}, { timestamps: true });
+
+export default mongoose.model("User", userSchema);
+
