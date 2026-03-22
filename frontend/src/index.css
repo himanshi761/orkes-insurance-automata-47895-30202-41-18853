@@ -1,3 +1,31 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* @import "tailwindcss"; */
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222 47% 11%;
+
+  --primary: 45 100% 50%;
+  --primary-foreground: 0 0% 0%;
+
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222 47% 11%;
+
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+
+  --accent: 45 100% 50%;
+  --accent-foreground: 0 0% 0%;
+
+  --border: 214 32% 91%;
+}
+
+:root {
+  --gradient-hero: linear-gradient(to right, #facc15, #f97316);
+  --gradient-gold: linear-gradient(to right, #facc15, #eab308);
+  --gradient-card: linear-gradient(to bottom, #ffffff, #f9fafb);
+
+  --shadow-gold: 0 10px 25px rgba(250, 204, 21, 0.3);
+}
