@@ -16,8 +16,10 @@ export const getClaims = async (req, res) => {
 
 export const createClaim = async (req, res) => {
   try {
+    console.log("BODY:", req.body);
+    console.log("FILES:", req.files);
     const { type, policyNumber, date, description, amount } = req.body;
-
+    
     // ✅ Step 1: Create claim
     const newClaim = new Claim({
       type,
