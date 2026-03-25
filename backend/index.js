@@ -39,6 +39,7 @@ let port = 8000;
 let app = express();
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use(
@@ -54,7 +55,7 @@ app.use("/api", claimRoutes);
 app.get("/", (req, res) => {
   res.send("Server is running 🚀");
 });
-
+app.use("/uploads", express.static("uploads"));
 connectDB()
   .then(() => {
     app.listen(port, () => {
