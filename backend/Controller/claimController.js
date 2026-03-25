@@ -65,3 +65,23 @@ export const createClaim = async (req, res) => {
     res.status(500).json({ message: "Error creating claim" });
   }
 };
+
+export const updateClaimStatus = async (req, res) => {
+  try {
+    const { status, notes } = req.body;
+
+    const claim = await Claim.findByIdAndUpdate(
+      req.params.id,
+      {
+        status,
+        agentNotes: notes,
+      },
+      { new: true }
+    );
+
+    res.json(claim);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
