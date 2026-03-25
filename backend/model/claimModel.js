@@ -4,7 +4,7 @@ const claimSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: false // make optional for now
+    required: false
   },
 
   agent: {
@@ -13,11 +13,13 @@ const claimSchema = new mongoose.Schema({
     default: null
   },
 
-  type: String, // ✅ ADD THIS
+  type: String,
+
+  policyNumber: String, // 🔥 ADD THIS (you are using it in frontend)
 
   status: {
     type: String,
-    enum: ["pending", "assigned", "approved", "rejected", "in-progress"], // ✅ add this
+    enum: ["pending", "assigned", "approved", "rejected", "in-progress"],
     default: "pending"
   },
 
@@ -25,13 +27,30 @@ const claimSchema = new mongoose.Schema({
 
   description: String,
 
-  date: String, // ✅ ADD THIS
+  date: String,
 
-  workflow_step: Number, // ✅ ADD THIS
+  workflow_step: {
+    type: Number,
+    default: 1 // 🔥 good practice
+  },
 
   aiResult: {
     type: mongoose.Schema.Types.Mixed
   },
+
+  // 🔥 ADD THIS (VERY IMPORTANT for agent dashboard)
+  agentNotes: {
+    type: String,
+    default: ""
+  },
+
+  // 🔥 OPTIONAL BUT USEFUL (documents linking)
+  documents: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Document"
+    }
+  ],
 
   assignedAt: Date,
   reviewedAt: Date

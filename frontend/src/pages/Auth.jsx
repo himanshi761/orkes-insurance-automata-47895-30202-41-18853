@@ -1,18 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-
 export default function Auth() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
-  const [selectedRole, setSelectedRole] = useState("user");
+  const [selectedRole, setSelectedRole] = useState("customer"); // 🔥 changed
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
 
-  const API_URL = "http://localhost:8000/api/auth"; // change if needed
+  const API_URL = "http://localhost:8000/api/auth";
 
   // ✅ SIGN UP
   const signUp = async () => {
@@ -24,23 +23,22 @@ export default function Auth() {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // important for cookies
         body: JSON.stringify({
           name: fullName,
           email,
           password,
-          role: selectedRole, // 🔥 send role to backend
+          role: selectedRole, // 🔥 send role
         }),
       });
 
       const data = await res.json();
-
       if (!res.ok) throw new Error(data.message);
 
-      // redirect based on role
-      if (data.role === "admin") navigate("/admin");
-      else if (data.role === "agent") navigate("/agent");
-      else navigate("/customer");
+      // 🔥 store auth
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.user.role);
+
+      redirectUser(data.user.role);
 
     } catch (err) {
       alert(err.message);
@@ -59,26 +57,30 @@ export default function Auth() {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
-
       if (!res.ok) throw new Error(data.message);
 
-      const role = data.user.role;
+      // 🔥 store auth
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.user.role);
 
-      // redirect
-      if (role === "admin") navigate("/admin");
-      else if (role === "agent") navigate("/agent");
-      else navigate("/customer");
+      redirectUser(data.user.role);
 
     } catch (err) {
       alert(err.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  // ✅ REDIRECTION FUNCTION (clean)
+  const redirectUser = (role) => {
+    if (role === "admin") navigate("/admin");
+    else if (role === "agent") navigate("/agent-dashboard"); // 🔥 FIXED
+    else navigate("/customer-dashboard"); // 🔥 FIXED
   };
 
   const handleAuth = () => {
@@ -89,6 +91,7 @@ export default function Auth() {
   return (
     <div className="flex h-screen items-center justify-center bg-white">
       <div className="w-full max-w-md rounded-lg border bg-white p-8 shadow">
+
         <h2 className="mb-2 text-center text-2xl font-semibold text-yellow-700">
           Insurance Claims Portal
         </h2>
@@ -97,10 +100,10 @@ export default function Auth() {
           {isLogin ? "Sign in to your account" : "Create an account"}
         </p>
 
-        {/* Role selection (only for signup) */}
+        {/* 🔥 ROLE SELECT (signup only) */}
         {!isLogin && (
           <div className="mb-6 grid grid-cols-3 gap-2">
-            {["user", "agent", "admin"].map((role) => (
+            {["customer", "agent", "admin"].map((role) => (
               <button
                 key={role}
                 className={`py-2 rounded border ${
@@ -173,6 +176,7 @@ export default function Auth() {
             </>
           )}
         </p>
+
       </div>
     </div>
   );

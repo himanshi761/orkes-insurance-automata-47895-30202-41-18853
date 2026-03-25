@@ -1,6 +1,6 @@
 import express from "express";
 import multer from "multer";
-import { getClaims, createClaim, getClaimDocuments } from "../Controller/claimController.js";
+import { getClaims, createClaim, getClaimDocuments,updateClaimStatus } from "../Controller/claimController.js";
 import path from "path";
 import Document from "../model/documentSchema.js";
 
@@ -25,6 +25,8 @@ const upload = multer({ storage });
 // ✅ GET all claims
 router.get("/claims", getClaims);
 router.get("/claims/:id/documents", getClaimDocuments);
+router.put("/claims/:id/status", updateClaimStatus);
+
 // ✅ POST new claim (WITH FILES)
 router.post(
   "/claims",

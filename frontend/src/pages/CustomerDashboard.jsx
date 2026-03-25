@@ -201,6 +201,16 @@ const CustomerDashboard = () => {
             <p><b>Amount:</b> ₹{selectedClaim.amount}</p>
             <p className="mt-2">{selectedClaim.description}</p>
 
+            {selectedClaim.agentNotes && (
+              <div className="mt-3 p-3 bg-gray-100 rounded-lg">
+                <p className="font-semibold text-sm text-gray-600">
+                  Agent Notes:
+                </p>
+                <p className="text-sm">
+                  {selectedClaim.agentNotes}
+                </p>
+              </div>
+            )}
             {/* 🔥 DOCUMENTS */}
             <div className="mt-4">
               <h3 className="font-semibold mb-2">Documents</h3>
