@@ -1,6 +1,20 @@
 import Claim from "../model/claimModel.js";
 import Document from "../model/documentSchema.js";
 // ✅ GET all claims
+
+// ✅ GET documents for a claim
+export const getClaimDocuments = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const documents = await Document.find({ claim: id });
+
+    res.json(documents);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching documents" });
+  }
+};
 export const getClaims = async (req, res) => {
   try {
     const claims = await Claim.find().sort({
