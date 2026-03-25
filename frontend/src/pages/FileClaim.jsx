@@ -38,64 +38,35 @@ const FileClaim = () => {
   const handleSubmit = async (e) => {
   e.preventDefault();
 
-  if (!claimType || !policyNumber || !incidentDate || !description) {
-    toast({
-      title: "Missing Information",
-      description: "Please fill all required fields.",
+  const formData = new FormData();
+
+  formData.append("type", claimType);
+  formData.append("policyNumber", policyNumber);
+  formData.append("date", incidentDate);
+  formData.append("description", description);
+  formData.append("amount", amount || 0);
+
+  // 🔥 CRITICAL FIX
+  if (files) {
+    Array.from(files).forEach((file) => {
+      formData.append("documents", file); // MUST match multer
     });
-    return;
   }
 
-  setLoading(true);
-
   try {
-    const token = localStorage.getItem("token"); // JWT from login
-
-    const formData = new FormData();
-    formData.append("type", claimType);
-    formData.append("policyNumber", policyNumber);
-    formData.append("date", incidentDate);
-    formData.append("description", description);
-    formData.append("amount", amount || 0);
-
-    // attach files
-    if (files) {
-      Array.from(files).forEach((file) => {
-        formData.append("documents", file);
-      });
-    }
-
     const res = await fetch("http://localhost:8000/api/claims", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: formData, // ⚠️ important (not JSON)
+      body: formData, // ✅ DO NOT add headers
     });
 
     const data = await res.json();
-
-    if (!res.ok) {
-      throw new Error(data.message || "Failed to submit claim");
-    }
-
-    toast({
-      title: "Claim Submitted ✅",
-      description: "Your claim has been submitted successfully.",
-    });
-
-    navigate("/customer", { state: { refresh: true } });
+    console.log("Response:", data);
 
   } catch (err) {
-    toast({
-      title: "Error",
-      description: err.message,
-      variant: "destructive",
-    });
-  } finally {
-    setLoading(false);
+    console.error("Error:", err);
   }
 };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -112,7 +83,7 @@ const FileClaim = () => {
           </div>
 
           <Card className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} encType="multipart/form-data" className="space-y-6">
               
               <Input
                 placeholder="Policy Number"
