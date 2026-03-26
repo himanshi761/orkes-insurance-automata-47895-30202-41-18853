@@ -31,6 +31,8 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors'; // ✅ ADD THIS
 import authRoutes from './routes/authRoutes.js';
 import claimRoutes from "./routes/claimRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+
 
 
 dotenv.config()
@@ -51,6 +53,7 @@ app.use(
 
 app.use("/api/auth", authRoutes);
 app.use("/api", claimRoutes);
+app.use("/api/users",userRoutes);
 
 app.get("/", (req, res) => {
   res.send("Server is running 🚀");
