@@ -1,8 +1,29 @@
 import Claim from "../model/claimModel.js";
 import Document from "../model/documentSchema.js";
-// ✅ GET all claims
 
-// ✅ GET documents for a claim
+
+// ✅ GET USER CLAIMS (FIXED 🔥)
+export const getClaims = async (req, res) => {
+  try {
+    let claims;
+
+    console.log("USER ROLE:", req.user.role); // 🔥 DEBUG
+
+    if (req.user.role === "customer") {
+      claims = await Claim.find({ user: req.user.userId });
+    } else {
+      claims = await Claim.find(); // 🔥 ALL CLAIMS
+    }
+
+    res.json(claims);
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
+// ✅ GET DOCUMENTS
 export const getClaimDocuments = async (req, res) => {
   try {
     const { id } = req.params;
@@ -15,27 +36,15 @@ export const getClaimDocuments = async (req, res) => {
     res.status(500).json({ message: "Error fetching documents" });
   }
 };
-export const getClaims = async (req, res) => {
-  try {
-    const claims = await Claim.find().sort({
-      createdAt: -1,
-    });
-
-    res.json(claims);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching claims" });
-  }
-};
 
 
+// ✅ CREATE CLAIM (FIXED 🔥 USER LINKED)
 export const createClaim = async (req, res) => {
   try {
-    console.log("BODY:", req.body);
-    console.log("FILES:", req.files);
     const { type, policyNumber, date, description, amount } = req.body;
-    
-    // ✅ Step 1: Create claim
+
     const newClaim = new Claim({
+      user: req.user._id, // 🔥 IMPORTANT FIX
       type,
       policyNumber,
       date,
@@ -47,11 +56,11 @@ export const createClaim = async (req, res) => {
 
     await newClaim.save();
 
-    // ✅ Step 2: Save uploaded files into Document collection
+    // ✅ SAVE DOCUMENTS
     if (req.files && req.files.length > 0) {
       const documents = req.files.map((file) => ({
         claim: newClaim._id,
-        fileUrl: file.path, // local path (or later cloud URL)
+        fileUrl: file.path,
         fileType: file.mimetype,
       }));
 
@@ -66,6 +75,8 @@ export const createClaim = async (req, res) => {
   }
 };
 
+
+// ✅ UPDATE STATUS (AGENT)
 export const updateClaimStatus = async (req, res) => {
   try {
     const { status, notes } = req.body;
@@ -75,6 +86,7 @@ export const updateClaimStatus = async (req, res) => {
       {
         status,
         agentNotes: notes,
+        reviewedAt: new Date(),
       },
       { new: true }
     );
@@ -84,4 +96,3 @@ export const updateClaimStatus = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-

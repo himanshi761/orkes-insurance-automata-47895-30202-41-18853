@@ -25,7 +25,7 @@ import { Search, CheckCircle, XCircle } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 
 const AgentDashboard = () => {
-  const { user, userRole, loading } = useAuth();
+  const { userRole, loading } = useAuth();
   const navigate = useNavigate();
 
   const [claims, setClaims] = useState([]);
@@ -34,11 +34,11 @@ const AgentDashboard = () => {
   const [selectedClaim, setSelectedClaim] = useState(null);
   const [actionNotes, setActionNotes] = useState("");
 
-  // 🔥 FETCH CLAIMS
+  const token = localStorage.getItem("token");
+
+  // ✅ FETCH CLAIMS
   const fetchClaims = async () => {
     try {
-      const token = localStorage.getItem("token");
-
       const res = await fetch("http://localhost:8000/api/claims", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -58,14 +58,13 @@ const AgentDashboard = () => {
 
   useEffect(() => {
     if (!loading && userRole !== "agent") {
-      console.log(userRole);
       navigate("/auth");
     }
   }, [userRole, loading]);
 
   if (loading) return <div>Loading...</div>;
 
-  // 🔥 APPROVE / REJECT
+  // ✅ UPDATE STATUS
   const updateStatus = async (status) => {
     try {
       await fetch(
@@ -74,6 +73,7 @@ const AgentDashboard = () => {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // 🔥 FIX
           },
           body: JSON.stringify({
             status,
@@ -84,7 +84,8 @@ const AgentDashboard = () => {
 
       setSelectedClaim(null);
       setActionNotes("");
-      fetchClaims(); // refresh
+      fetchClaims();
+
     } catch (err) {
       console.error(err);
     }
@@ -92,7 +93,7 @@ const AgentDashboard = () => {
 
   const filteredClaims = claims.filter((c) => {
     const matchSearch =
-      c.policyNumber?.includes(searchTerm) ||
+      c.policyNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.type?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchStatus =
@@ -106,10 +107,7 @@ const AgentDashboard = () => {
       <Navigation />
 
       <div className="container mx-auto px-4 py-12">
-
-        <h1 className="text-4xl font-bold mb-6">
-          Agent Dashboard
-        </h1>
+        <h1 className="text-4xl font-bold mb-6">Agent Dashboard</h1>
 
         {/* FILTER */}
         <Card className="p-6 mb-6 flex gap-4">
@@ -126,6 +124,7 @@ const AgentDashboard = () => {
             <SelectContent>
               <SelectItem value="all">All</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="in-progress">In Progress</SelectItem>
               <SelectItem value="approved">Approved</SelectItem>
               <SelectItem value="rejected">Rejected</SelectItem>
             </SelectContent>
@@ -169,14 +168,12 @@ const AgentDashboard = () => {
         </Card>
       </div>
 
-      {/* 🔥 MODAL */}
+      {/* MODAL */}
       {selectedClaim && (
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center">
           <div className="bg-white p-6 rounded w-[500px]">
 
-            <h2 className="text-xl font-bold mb-4">
-              Review Claim
-            </h2>
+            <h2 className="text-xl font-bold mb-4">Review Claim</h2>
 
             <p><b>Type:</b> {selectedClaim.type}</p>
             <p><b>Amount:</b> ₹{selectedClaim.amount}</p>
@@ -202,9 +199,7 @@ const AgentDashboard = () => {
                 <XCircle className="mr-2" /> Reject
               </Button>
 
-              <Button
-                onClick={() => updateStatus("approved")}
-              >
+              <Button onClick={() => updateStatus("approved")}>
                 <CheckCircle className="mr-2" /> Approve
               </Button>
             </div>
@@ -215,5 +210,4 @@ const AgentDashboard = () => {
     </div>
   );
 };
-
 export default AgentDashboard;
