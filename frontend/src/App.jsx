@@ -7,6 +7,8 @@ import CustomerDashboard from './pages/CustomerDashboard';
 import AgentDashboard from './pages/AgentDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import FileClaim from './pages/FileClaim';
+import DocumentsPage from "./pages/DocumentsPage";
+import HelpSupport from "./pages/HelpSupport";
 // import Login from "./pages/Login";
 // CustomerDashboard
 const App = () => {
@@ -21,6 +23,8 @@ const App = () => {
         <Route path="/agent" element={<AgentDashboard />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/file-claim" element={<FileClaim />} />
+        <Route path="/documents" element={<DocumentsPage />} />
+<Route path="/help" element={<HelpSupport />} />
         
       </Routes>
     </>
