@@ -163,7 +163,7 @@ export const useAuth = () => {
   // Sign up
   const signUp = async (name, email, password, role = "user") => {
     try {
-      const res = await fetch("/api/auth/signup", {
+      const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password, role }),
@@ -171,7 +171,8 @@ export const useAuth = () => {
 
       const data = await res.json();
       if (res.ok) {
-        localStorage.setItem("authToken", data.token);
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("role", data.user.role);
         setUser(data.user);
         setUserRole(data.user.role);
       }
@@ -185,7 +186,7 @@ export const useAuth = () => {
   // Sign in
   const signIn = async (email, password) => {
     try {
-      const res = await fetch("/api/auth/signin", {
+      const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -193,7 +194,8 @@ export const useAuth = () => {
 
       const data = await res.json();
       if (res.ok) {
-        localStorage.setItem("authToken", data.token);
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("role", data.user.role);
         setUser(data.user);
         setUserRole(data.user.role);
       }
