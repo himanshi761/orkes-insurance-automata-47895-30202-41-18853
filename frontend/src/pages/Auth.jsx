@@ -27,25 +27,17 @@ export default function Auth() {
           name: fullName,
           email,
           password,
-          role: selectedRole, // 🔥 send role
+          role: selectedRole,
         }),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
 
-      // // 🔥 store auth
-      // localStorage.setItem("token", data.token);
-      // localStorage.setItem("role", data.user.role);
-
-      // redirectUser(data.user.role);
-
-      const role = selectedRole; // 🔥 always correct
-
       localStorage.setItem("token", data.token);
-      localStorage.setItem("role", role);
+      localStorage.setItem("role", selectedRole);
 
-      redirectUser(role);
+      redirectUser(selectedRole);
 
     } catch (err) {
       alert(err.message);
@@ -54,7 +46,6 @@ export default function Auth() {
     }
   };
 
-  // ✅ SIGN IN
   const signIn = async () => {
     try {
       setLoading(true);
@@ -70,7 +61,6 @@ export default function Auth() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
 
-      // 🔥 store auth
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.user.role);
 
@@ -83,13 +73,11 @@ export default function Auth() {
     }
   };
 
-  // ✅ REDIRECTION FUNCTION (clean)
   const redirectUser = (role) => {
     if (role === "admin") navigate("/admin");
-    else if (role === "agent") navigate("/agent"); // 🔥 FIXED
-    else navigate("/customer"); // 🔥 FIXED
+    else if (role === "agent") navigate("/agent");
+    else navigate("/customer");
   };
-
   const handleAuth = () => {
     if (isLogin) signIn();
     else signUp();
@@ -113,11 +101,10 @@ export default function Auth() {
             {["customer", "agent", "admin"].map((role) => (
               <button
                 key={role}
-                className={`py-2 rounded border ${
-                  selectedRole === role
+                className={`py-2 rounded border ${selectedRole === role
                     ? "bg-yellow-500 text-white"
                     : "bg-white text-gray-700"
-                }`}
+                  }`}
                 onClick={() => setSelectedRole(role)}
               >
                 {role}

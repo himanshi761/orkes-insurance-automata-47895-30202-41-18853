@@ -19,7 +19,7 @@ export const registration= async(req,res)=>{
 
         const user=await User.create({name,email,password:hashPassword,role})
 
-        let token= await gentoken(user._id)
+        let token = await gentoken(user)
         res.cookie("token",token,{
             httpOnly:true,
             secure:true,
@@ -58,7 +58,7 @@ export const login = async (req, res) => {
             return res.status(400).json({ message: "Incorrect Password" });
         }
 
-        let token = gentoken(user._id);
+        let token = await gentoken(user)
 
         res.cookie("token", token, {
             httpOnly: true,

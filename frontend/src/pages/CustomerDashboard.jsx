@@ -21,7 +21,13 @@ const CustomerDashboard = () => {
     try {
       setLoadingClaims(true);
 
-      const res = await fetch("http://localhost:8000/api/claims");
+      const token = localStorage.getItem("token");
+
+      const res = await fetch("http://localhost:8000/api/claims", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const data = await res.json();
 
       if (!res.ok) {
@@ -41,8 +47,15 @@ const CustomerDashboard = () => {
     setSelectedClaim(claim);
 
     try {
+      const token = localStorage.getItem("token");
+
       const res = await fetch(
-        `http://localhost:8000/api/claims/${claim._id}/documents`
+        `http://localhost:8000/api/claims/${claim._id}/documents`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       const data = await res.json();

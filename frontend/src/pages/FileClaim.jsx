@@ -31,7 +31,6 @@ const FileClaim = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // ✅ Validation
     if (!claimType || !policyNumber || !incidentDate || !description) {
       toast({
         title: "Missing Fields",
@@ -41,7 +40,6 @@ const FileClaim = () => {
     }
 
     const formData = new FormData();
-
     formData.append("type", claimType);
     formData.append("policyNumber", policyNumber);
     formData.append("date", incidentDate);
@@ -57,40 +55,37 @@ const FileClaim = () => {
     setLoading(true);
 
     try {
+      const token = localStorage.getItem("token"); // 🔥 IMPORTANT
+
       const res = await fetch("http://localhost:8000/api/claims", {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`, // 🔥 FIX
+        },
         body: formData,
       });
 
       const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message);
 
       toast({
         title: "Success 🎉",
         description: "Claim submitted successfully!",
       });
 
-      // reset form
-      setClaimType("");
-      setPolicyNumber("");
-      setIncidentDate("");
-      setDescription("");
-      setAmount("");
-      setFiles(null);
-
       navigate("/customer", { state: { refresh: true } });
 
     } catch (err) {
-      console.error(err);
       toast({
         title: "Error ❌",
-        description: "Something went wrong",
+        description: err.message,
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div className="min-h-screen bg-background">
       <Navigation />

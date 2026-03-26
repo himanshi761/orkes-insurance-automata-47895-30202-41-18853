@@ -1,15 +1,16 @@
 import express from "express";
 import multer from "multer";
-import { getClaims, createClaim, getClaimDocuments,updateClaimStatus } from "../Controller/claimController.js";
-import path from "path";
-import Document from "../model/documentSchema.js";
-
-// import authMiddleware from "../middleware/authMiddleware.js";
+import {
+  getClaims,
+  createClaim,
+  getClaimDocuments,
+  updateClaimStatus
+} from "../Controller/claimController.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// 🔥 Configure multer (for file uploads)
-
+// 🔥 Multer config
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "uploads/");
@@ -22,16 +23,24 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// ✅ GET all claims
-router.get("/claims", getClaims);
-router.get("/claims/:id/documents", getClaimDocuments);
-router.put("/claims/:id/status", updateClaimStatus);
 
-// ✅ POST new claim (WITH FILES)
+// ================= ROUTES =================
+
+// ✅ Get ONLY logged-in user's claims
+router.get("/claims", protect, getClaims);
+
+// ✅ Create claim (with file upload + user auth)
 router.post(
   "/claims",
-  upload.array("documents"), // 👈 must match frontend
+  protect,
+  upload.array("documents"), // 🔥 important: frontend must match this name
   createClaim
 );
+
+// ✅ Get documents of a claim
+router.get("/claims/:id/documents", protect, getClaimDocuments);
+
+// ✅ Agent updates claim status
+router.put("/claims/:id/status", protect, updateClaimStatus);
 
 export default router;
