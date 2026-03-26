@@ -58,6 +58,7 @@ const AgentDashboard = () => {
 
   useEffect(() => {
     if (!loading && userRole !== "agent") {
+      console.log(userRole);
       navigate("/auth");
     }
   }, [userRole, loading]);

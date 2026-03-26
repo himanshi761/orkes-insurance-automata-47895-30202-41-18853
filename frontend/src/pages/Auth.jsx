@@ -34,11 +34,18 @@ export default function Auth() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
 
-      // 🔥 store auth
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("role", data.user.role);
+      // // 🔥 store auth
+      // localStorage.setItem("token", data.token);
+      // localStorage.setItem("role", data.user.role);
 
-      redirectUser(data.user.role);
+      // redirectUser(data.user.role);
+
+      const role = selectedRole; // 🔥 always correct
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("role", role);
+
+      redirectUser(role);
 
     } catch (err) {
       alert(err.message);
@@ -79,8 +86,8 @@ export default function Auth() {
   // ✅ REDIRECTION FUNCTION (clean)
   const redirectUser = (role) => {
     if (role === "admin") navigate("/admin");
-    else if (role === "agent") navigate("/agent-dashboard"); // 🔥 FIXED
-    else navigate("/customer-dashboard"); // 🔥 FIXED
+    else if (role === "agent") navigate("/agent"); // 🔥 FIXED
+    else navigate("/customer"); // 🔥 FIXED
   };
 
   const handleAuth = () => {
