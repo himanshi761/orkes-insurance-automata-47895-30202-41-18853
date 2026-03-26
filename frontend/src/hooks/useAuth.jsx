@@ -116,35 +116,49 @@ export const useAuth = () => {
 
   // Initialize user from token
   useEffect(() => {
-    const initUser = async () => {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        setLoading(false);
-        return;
-      }
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
 
-      try {
-        const res = await fetch("/api/auth/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+  console.log("AUTH INIT:", { token, role });
 
-        if (!res.ok) throw new Error("Failed to fetch user");
+  if (token && role) {
+    setUser({});
+    setUserRole(role);
+  }
 
-        const data = await res.json();
-        setUser(data.user);
-        setUserRole(data.user.role);
-      } catch (err) {
-        console.error(err);
-        localStorage.removeItem("authToken");
-        setUser(null);
-        setUserRole(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+  setLoading(false);
+}, []);
+    // useEffect(() => {
+    //   const initUser = async () => {
+    //     // const token = localStorage.getItem("authToken");
+    //     const token = localStorage.getItem("token");
+    //     if (!token) {
+    //       setLoading(false);
+    //       return;
+    //     }
 
-    initUser();
-  }, []);
+    //     try {
+    //       const res = await fetch("/api/auth/me", {
+    //         headers: { Authorization: `Bearer ${token}` },
+    //       });
+
+    //       if (!res.ok) throw new Error("Failed to fetch user");
+
+    //       const data = await res.json();
+    //       setUser(data.user);
+    //       setUserRole(data.user.role);
+    //     } catch (err) {
+    //       console.error(err);
+    //       localStorage.removeItem("authToken");
+    //       setUser(null);
+    //       setUserRole(null);
+    //     } finally {
+    //       setLoading(false);
+    //     }
+    //   };
+
+    //   initUser();
+    // }, []);
 
   // Sign up
   const signUp = async (name, email, password, role = "user") => {
@@ -192,7 +206,9 @@ export const useAuth = () => {
 
   // Sign out
   const signOut = () => {
-    localStorage.removeItem("authToken");
+    // localStorage.removeItem("authToken");
+    localStorage.removeItem("token");
+localStorage.removeItem("role");
     setUser(null);
     setUserRole(null);
     navigate("/auth");
