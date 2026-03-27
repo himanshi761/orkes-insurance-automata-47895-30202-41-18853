@@ -1,3 +1,4 @@
+import { isAgent } from "../middleware/roleMiddleware.js";
 import express from "express";
 import multer from "multer";
 import {
@@ -41,6 +42,6 @@ router.post(
 router.get("/claims/:id/documents", protect, getClaimDocuments);
 
 // ✅ Agent updates claim status
-router.put("/claims/:id/status", protect, updateClaimStatus);
+router.put("/claims/:id/status", protect,isAgent, updateClaimStatus);
 
 export default router;
