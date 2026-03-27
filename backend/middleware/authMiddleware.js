@@ -1,20 +1,24 @@
 import jwt from "jsonwebtoken";
 
-export const protect = async (req, res, next) => {
+export const protect = (req, res, next) => {
   try {
-    let token = req.headers.authorization?.split(" ")[1];
+    const authHeader = req.headers.authorization;
 
-    if (!token) {
-      return res.status(401).json({ message: "No token" });
+    console.log("Auth Header:", authHeader);
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "No token or bad format" });
     }
+
+    const token = authHeader.split(" ")[1];
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    req.user = decoded; // 🔥 now has userId + role
+    req.user = decoded;
 
     next();
-
   } catch (err) {
-    return res.status(401).json({ message: "Invalid token" });
+    console.log("JWT Error:", err.message);
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
 };

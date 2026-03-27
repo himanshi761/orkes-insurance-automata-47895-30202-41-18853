@@ -7,14 +7,16 @@ export const getClaims = async (req, res) => {
   try {
     let claims;
 
-    console.log("USER ROLE:", req.user.role); // 🔥 DEBUG
+    console.log("USER ROLE:", req.user.role);
 
     if (req.user.role === "customer") {
-      claims = await Claim.find({ user: req.user.userId });
+      claims = await Claim.find({ user: req.user.userId })
+        .populate("user", "name email"); // 🔥 FIX
     } else {
-      claims = await Claim.find(); // 🔥 ALL CLAIMS
+      claims = await Claim.find()
+        .populate("user", "name email"); // 🔥 FIX
     }
-
+   
     res.json(claims);
 
   } catch (err) {
@@ -44,7 +46,7 @@ export const createClaim = async (req, res) => {
     const { type, policyNumber, date, description, amount } = req.body;
 
     const newClaim = new Claim({
-      user: req.user._id, // 🔥 IMPORTANT FIX
+      user: req.user.userId, // 🔥 IMPORTANT FIX
       type,
       policyNumber,
       date,
