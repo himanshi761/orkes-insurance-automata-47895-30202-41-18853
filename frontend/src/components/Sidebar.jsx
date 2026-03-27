@@ -11,6 +11,20 @@ const Sidebar = ({ collapsed }) => {
     { name: "Help & Support", icon: HelpCircle, path: "/help" },
   ];
 
+//   const menu = [
+//   // CUSTOMER
+//   { name: "Dashboard", icon: LayoutDashboard, path: "/customer" },
+//   { name: "My Claims", icon: FileText, path: "/customer/claims" },
+//   { name: "Documents", icon: Folder, path: "/documents" },
+//   { name: "Help & Support", icon: HelpCircle, path: "/help" },
+
+//   // ADMIN
+//   { name: "Admin Overview", icon: LayoutDashboard, path: "/admin/overview" },
+//   { name: "Analytics", icon: LayoutDashboard, path: "/admin/analytics" },
+//   { name: "All Claims", icon: FileText, path: "/admin/claims" },
+//   { name: "Agents", icon: Folder, path: "/admin/agents" },
+// ];
+
   return (
     <div
       className={`bg-[rgb(15,42,68)] text-white h-screen p-4 transition-all duration-300 ${
@@ -24,15 +38,21 @@ const Sidebar = ({ collapsed }) => {
       <div className="space-y-3">
         {menu.map((item) => {
           const Icon = item.icon;
-          const active = location.pathname === item.path;
+          // const active = location.pathname === item.path;
+          const active = location.pathname.startsWith(item.path);
 
           return (
             <Link
               key={item.name}
               to={item.path}
+              // className={`flex items-center gap-3 p-3 rounded-lg transition ${
+              //   active ? "bg-yellow-500 text-black" : "hover:bg-yellow-600"
+              // }`}
               className={`flex items-center gap-3 p-3 rounded-lg transition ${
-                active ? "bg-yellow-500 text-black" : "hover:bg-yellow-600"
-              }`}
+  active
+    ? "bg-teal-500 text-white"
+    : "hover:bg-yellow-600"
+}`}
             >
               <Icon size={20} />
               {!collapsed && item.name}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
-import { AdminSidebar } from "@/components/AdminSidebar";
+// import { AdminSidebar } from "@/components/AdminSidebar";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -24,6 +24,8 @@ import ClaimStatusBadge from "@/components/ClaimStatusBadge";
 const AdminDashboard = () => {
   const { userRole, loading } = useAuth();
   const navigate = useNavigate();
+
+  
 
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -81,16 +83,21 @@ const AdminDashboard = () => {
     }
   };
 
+  useEffect(() => {
+  console.log("CLAIMS DATA:", claims);
+}, [claims]);
+
   if (loading) {
     return <div className="text-center mt-10">Loading...</div>;
   }
 
+
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
+      {/* <Navigation /> */}
 
-      <div className="flex">
-        <AdminSidebar />
+      <div >
+        
 
         <main className="flex-1 p-8">
           <h1 className="text-4xl font-bold mb-6">
@@ -141,7 +148,10 @@ const AdminDashboard = () => {
                 {claims.map((c) => (
                   <TableRow key={c._id}>
                     <TableCell>{c.policyNumber}</TableCell>
-                    <TableCell>{c.user?.name}</TableCell>
+                    <TableCell>
+  {c.user?.name || c.user?.email || "No User"}
+</TableCell>
+                    {/* <TableCell>{c.user?.name}</TableCell> */}
                     <TableCell>
                       <ClaimStatusBadge status={c.status} />
                     </TableCell>
