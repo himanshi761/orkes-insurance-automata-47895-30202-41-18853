@@ -1,9 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, FileText, Folder, HelpCircle } from "lucide-react";
+import { FileText, Folder, HelpCircle, LayoutDashboard, Receipt } from "lucide-react";
 
 const Sidebar = ({ collapsed }) => {
   const location = useLocation();
-
   const menu = [
     { name: "Dashboard", icon: LayoutDashboard, path: "/customer" },
     { name: "My Claims", icon: FileText, path: "/customer" },
@@ -11,56 +10,58 @@ const Sidebar = ({ collapsed }) => {
     { name: "Help & Support", icon: HelpCircle, path: "/help" },
   ];
 
-//   const menu = [
-//   // CUSTOMER
-//   { name: "Dashboard", icon: LayoutDashboard, path: "/customer" },
-//   { name: "My Claims", icon: FileText, path: "/customer/claims" },
-//   { name: "Documents", icon: Folder, path: "/documents" },
-//   { name: "Help & Support", icon: HelpCircle, path: "/help" },
-
-//   // ADMIN
-//   { name: "Admin Overview", icon: LayoutDashboard, path: "/admin/overview" },
-//   { name: "Analytics", icon: LayoutDashboard, path: "/admin/analytics" },
-//   { name: "All Claims", icon: FileText, path: "/admin/claims" },
-//   { name: "Agents", icon: Folder, path: "/admin/agents" },
-// ];
+  const widthClass = collapsed ? "w-24" : "w-64";
 
   return (
-    <div
-      className={`bg-[rgb(15,42,68)] text-white h-screen p-4 transition-all duration-300 ${
-        collapsed ? "w-20" : "w-64"
-      }`}
+    <aside
+      className={`fixed inset-y-0 left-0 hidden border-r border-[#9b7305] bg-[linear-gradient(180deg,#c88f00_0%,#a37508_100%)] px-4 py-4 text-white lg:flex lg:flex-col ${widthClass}`}
     >
-      <h2 className="text-xl font-bold mb-6 text-yellow-400">
-        {!collapsed && "Customer Portal"}
-      </h2>
+      <div className="rounded-3xl border border-white/20 bg-white/10 p-4 backdrop-blur">
+        <p className="text-sm uppercase tracking-[0.3em] text-yellow-100">iClaim</p>
+        {!collapsed && (
+          <>
+            <h2 className="mt-2 text-3xl font-bold leading-tight">Customer Portal</h2>
+            <p className="mt-2 text-sm leading-6 text-yellow-50/90">
+              Follow every claim update and keep your supporting documents close.
+            </p>
+          </>
+        )}
+      </div>
 
-      <div className="space-y-3">
+      <div className="mt-5 space-y-2">
         {menu.map((item) => {
           const Icon = item.icon;
-          // const active = location.pathname === item.path;
           const active = location.pathname.startsWith(item.path);
 
           return (
             <Link
               key={item.name}
               to={item.path}
-              // className={`flex items-center gap-3 p-3 rounded-lg transition ${
-              //   active ? "bg-yellow-500 text-black" : "hover:bg-yellow-600"
-              // }`}
-              className={`flex items-center gap-3 p-3 rounded-lg transition ${
-  active
-    ? "bg-teal-500 text-white"
-    : "hover:bg-yellow-600"
-}`}
+              className={`flex items-center gap-3 rounded-2xl px-4 py-2.5 transition ${
+                active ? "bg-[#805c05] shadow-lg" : "bg-white/10 hover:bg-white/20"
+              }`}
             >
-              <Icon size={20} />
-              {!collapsed && item.name}
+              <Icon className="h-5 w-5" />
+              {!collapsed && <span className="font-medium">{item.name}</span>}
             </Link>
           );
         })}
       </div>
-    </div>
+
+      <div className="mt-auto rounded-3xl border border-white/20 bg-slate-950/20 p-3.5">
+        <p className="text-xs uppercase tracking-[0.24em] text-yellow-100">Claim Tracking</p>
+        <div className="mt-2 flex items-center gap-3">
+          <div className="rounded-2xl bg-white/15 p-2">
+            <Receipt className="h-5 w-5" />
+          </div>
+          {!collapsed && (
+            <p className="text-xs leading-5 text-yellow-50/80">
+              Review AI insights, documents, and claim progress in one place.
+            </p>
+          )}
+        </div>
+      </div>
+    </aside>
   );
 };
 

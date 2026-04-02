@@ -20,21 +20,19 @@ import User from "../model/userModel.js";
 
 const router = express.Router();
 
-// ✅ GET ALL USERS
-router.get("/", async (req, res) => {
+router.get("/", async (_req, res) => {
   try {
-    const users = await User.find();
+    const users = await User.find().select("name email role createdAt");
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: "Error fetching users" });
   }
 });
 
-// ✅ GET ONLY CLIENTS (CUSTOMERS)
-router.get("/clients", async (req, res) => {
+router.get("/clients", async (_req, res) => {
   try {
     const clients = await User.find({ role: "customer" }).select(
-      "name email createdAt"
+      "name email role createdAt"
     );
 
     res.json(clients);
@@ -43,13 +41,10 @@ router.get("/clients", async (req, res) => {
   }
 });
 
-export default router;
-
-// ✅ GET ONLY AGENTS
-router.get("/agents", async (req, res) => {
+router.get("/agents", async (_req, res) => {
   try {
     const agents = await User.find({ role: "agent" }).select(
-      "name email createdAt"
+      "name email role createdAt"
     );
 
     res.json(agents);
@@ -57,3 +52,5 @@ router.get("/agents", async (req, res) => {
     res.status(500).json({ message: "Error fetching agents" });
   }
 });
+
+export default router;

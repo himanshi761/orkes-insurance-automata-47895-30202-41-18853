@@ -3,17 +3,29 @@ import { useNavigate } from "react-router-dom";
 
 export default function Auth() {
   const navigate = useNavigate();
-
   const [loading, setLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
-  const [selectedRole, setSelectedRole] = useState("customer"); // 🔥 changed
+  const [selectedRole, setSelectedRole] = useState("customer");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
 
   const API_URL = "http://localhost:8000/api/auth";
 
-  // ✅ SIGN UP
+  const redirectUser = (role) => {
+    if (role === "admin") navigate("/admin");
+    else if (role === "agent") navigate("/agent");
+    else navigate("/customer");
+  };
+
+  const storeSession = (user, token) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("role", user.role);
+    localStorage.setItem("userId", user._id || user.id || "");
+    localStorage.setItem("userName", user.name || "");
+    localStorage.setItem("userEmail", user.email || "");
+  };
+
   const signUp = async () => {
     try {
       setLoading(true);
@@ -32,13 +44,10 @@ export default function Auth() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+      if (!res.ok) throw new Error(data.message || "Sign up failed");
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("role", selectedRole);
-
-      redirectUser(selectedRole);
-
+      storeSession(data.user, data.token);
+      redirectUser(data.user.role);
     } catch (err) {
       alert(err.message);
     } finally {
@@ -59,13 +68,10 @@ export default function Auth() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+      if (!res.ok) throw new Error(data.message || "Login failed");
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("role", data.user.role);
-
+      storeSession(data.user, data.token);
       redirectUser(data.user.role);
-
     } catch (err) {
       alert(err.message);
     } finally {
@@ -73,20 +79,9 @@ export default function Auth() {
     }
   };
 
-  const redirectUser = (role) => {
-    if (role === "admin") navigate("/admin");
-    else if (role === "agent") navigate("/agent");
-    else navigate("/customer");
-  };
-  const handleAuth = () => {
-    if (isLogin) signIn();
-    else signUp();
-  };
-
   return (
-    <div className="flex h-screen items-center justify-center bg-white">
+    <div className="flex min-h-screen items-center justify-center bg-white px-4">
       <div className="w-full max-w-md rounded-lg border bg-white p-8 shadow">
-
         <h2 className="mb-2 text-center text-2xl font-semibold text-yellow-700">
           Insurance Claims Portal
         </h2>
@@ -95,16 +90,17 @@ export default function Auth() {
           {isLogin ? "Sign in to your account" : "Create an account"}
         </p>
 
-        {/* 🔥 ROLE SELECT (signup only) */}
         {!isLogin && (
           <div className="mb-6 grid grid-cols-3 gap-2">
             {["customer", "agent", "admin"].map((role) => (
               <button
                 key={role}
-                className={`py-2 rounded border ${selectedRole === role
+                type="button"
+                className={`rounded border py-2 ${
+                  selectedRole === role
                     ? "bg-yellow-500 text-white"
                     : "bg-white text-gray-700"
-                  }`}
+                }`}
                 onClick={() => setSelectedRole(role)}
               >
                 {role}
@@ -140,7 +136,8 @@ export default function Auth() {
         )}
 
         <button
-          onClick={handleAuth}
+          type="button"
+          onClick={isLogin ? signIn : signUp}
           disabled={loading}
           className="w-full rounded bg-yellow-500 py-2 font-medium text-white hover:bg-yellow-600"
         >
@@ -150,8 +147,9 @@ export default function Auth() {
         <p className="mt-4 text-center text-sm text-gray-600">
           {isLogin ? (
             <>
-              Don’t have an account?{" "}
+              Don&apos;t have an account?{" "}
               <button
+                type="button"
                 onClick={() => setIsLogin(false)}
                 className="font-semibold text-yellow-600"
               >
@@ -162,6 +160,7 @@ export default function Auth() {
             <>
               Already have an account?{" "}
               <button
+                type="button"
                 onClick={() => setIsLogin(true)}
                 className="font-semibold text-yellow-600"
               >
@@ -170,7 +169,6 @@ export default function Auth() {
             </>
           )}
         </p>
-
       </div>
     </div>
   );

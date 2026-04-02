@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="540">
+  <rect width="100%" height="100%" fill="#f0fdf4" />
+  <text x="60" y="90" font-size="42" font-family="Arial" fill="#166534">Prescription</text>
+  <text x="60" y="170" font-size="28" font-family="Arial" fill="#111827">Patient: cust3</text>
+  <text x="60" y="220" font-size="28" font-family="Arial" fill="#111827">Diagnosis: Minor injury follow-up</text>
+  <text x="60" y="270" font-size="28" font-family="Arial" fill="#111827">Rx: Pain relief tablet, 5 days</text>
+  <text x="60" y="320" font-size="28" font-family="Arial" fill="#111827">Dosage: Twice daily after meals</text>
+  <text x="60" y="370" font-size="28" font-family="Arial" fill="#111827">Doctor: Dr. R. Sharma</text>
+</svg>

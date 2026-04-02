@@ -6,6 +6,10 @@ const ClaimStatusBadge = ({ status }) => {
       label: "Pending Review",
       className: "bg-warning/10 text-warning border-warning/20",
     },
+    assigned: {
+      label: "Assigned",
+      className: "bg-blue-100 text-blue-700 border-blue-200",
+    },
     "in-progress": {
       label: "In Progress",
       className: "bg-accent/10 text-accent border-accent/20",
@@ -24,7 +28,7 @@ const ClaimStatusBadge = ({ status }) => {
     },
   };
 
-  const config = statusConfig[status];
+  const config = statusConfig[status] || statusConfig.pending;
 
   return (
     <Badge variant="outline" className={config.className}>

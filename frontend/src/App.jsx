@@ -15,6 +15,8 @@ import Clients from './pages/Clients';
 import Agents from './pages/Agents';
 import Claims from './pages/Claims';
 import Settings from './pages/Settings';
+import Profile from './pages/Profile';
+import CustomerLayout from './pages/CustomerLayout';
 
 
 // import Login from "./pages/Login";
@@ -27,9 +29,14 @@ const App = () => {
         {/* <Route path='/login' element= {<Login/>}/> */}
         <Route path='/auth' element= {<Auth/>}/>
         {/* <Route path='/auth' element= {<Claim/>}/> */}
-        <Route path="/customer" element={<CustomerDashboard />} />
+        <Route path="/" element={<Home/>}/>
         <Route path="/agent" element={<AgentDashboard />} />
-       
+        <Route path="/" element={<CustomerLayout />}>
+          <Route path="customer" element={<CustomerDashboard />} />
+          <Route path="documents" element={<DocumentsPage />} />
+          <Route path="help" element={<HelpSupport />} />
+        </Route>
+        
         {/* <Route path="/admin" element={<AdminDashboard />} /> */}
         {/* <Route path="/admin/analytics" element={<Analytics />} /> */}
         {/* <Route path="/admin" element={<AdminLayout />}>
@@ -44,8 +51,7 @@ const App = () => {
    <Route path="settings" element={<Settings />} />
 </Route>
         <Route path="/file-claim" element={<FileClaim />} />
-        <Route path="/documents" element={<DocumentsPage />} />
-<Route path="/help" element={<HelpSupport />} />
+        <Route path="/profile" element={<Profile />} />
         
       </Routes>
     </>

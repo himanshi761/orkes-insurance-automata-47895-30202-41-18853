@@ -19,7 +19,7 @@ const claimSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: ["pending", "assigned", "approved", "rejected", "in-progress"],
+    enum: ["pending", "assigned", "approved", "rejected", "in-progress", "paid"],
     default: "pending"
   },
 
@@ -38,6 +38,17 @@ const claimSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed
   },
 
+  aiReviewStatus: {
+    type: String,
+    enum: ["not_requested", "completed", "failed"],
+    default: "not_requested"
+  },
+
+  aiReviewedAt: {
+    type: Date,
+    default: null
+  },
+
   // 🔥 ADD THIS (VERY IMPORTANT for agent dashboard)
   agentNotes: {
     type: String,
@@ -53,7 +64,8 @@ const claimSchema = new mongoose.Schema({
   ],
 
   assignedAt: Date,
-  reviewedAt: Date
+  reviewedAt: Date,
+  paidAt: Date
 
 }, { timestamps: true });
 

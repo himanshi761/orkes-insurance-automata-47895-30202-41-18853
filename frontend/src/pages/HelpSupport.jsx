@@ -1,7 +1,8 @@
 const HelpSupport = () => {
   return (
-    <div className="bg-white p-6 rounded-xl shadow max-w-2xl">
-      <h1 className="text-2xl font-bold mb-4">Help & Support</h1>
+    <div className="min-h-[calc(100vh-80px)] p-6 lg:p-8">
+      <div className="mx-auto max-w-3xl rounded-[2rem] border border-slate-200 bg-white p-8 shadow-xl">
+      <h1 className="text-3xl font-bold mb-4">Help & Support</h1>
 
       <div className="space-y-4">
 
@@ -20,6 +21,7 @@ const HelpSupport = () => {
           <p className="text-gray-500">Go to My Claims</p>
         </div>
 
+      </div>
       </div>
     </div>
   );

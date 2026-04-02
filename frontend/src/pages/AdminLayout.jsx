@@ -4,22 +4,15 @@ import Topbar from "../components/Topbar";
 
 export default function AdminLayout() {
   return (
-    <div className="flex min-h-screen">
-      
-      {/* Sidebar */}
+    <div className="min-h-screen bg-gray-100">
       <AdminSidebar />
-
-      {/* Right Section */}
-      <div className="flex-1 flex flex-col">
-        
-        {/* Topbar */}
-        <Topbar />
-
-        {/* Main Content */}
-        <main className="flex-1 bg-gray-100 p-6">
+      <div className="lg:pl-64">
+      <Topbar className="sticky top-0 z-40" />
+      <main className="min-h-screen">
+        <div className="min-h-[calc(100vh-73px)] p-6">
           <Outlet />
-        </main>
-
+        </div>
+      </main>
       </div>
     </div>
   );

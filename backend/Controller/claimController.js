@@ -1,100 +1,270 @@
 import Claim from "../model/claimModel.js";
 import Document from "../model/documentSchema.js";
+import User from "../model/userModel.js";
+import { generateClaimReview } from "../services/aiReviewService.js";
 
+const populateClaim = (query) =>
+  query
+    .populate("user", "name email role")
+    .populate("agent", "name email role")
+    .populate("documents");
 
-// ✅ GET USER CLAIMS (FIXED 🔥)
-export const getClaims = async (req, res) => {
+const attachReviewToClaim = async (claimId) => {
+  const claim = await populateClaim(Claim.findById(claimId));
+  if (!claim) return null;
+
+  const documents =
+    claim.documents?.length > 0
+      ? claim.documents
+      : await Document.find({ claim: claim._id });
+  const customer =
+    claim.user && typeof claim.user === "object"
+      ? claim.user
+      : await User.findById(claim.user);
+
   try {
-    let claims;
+    const review = await generateClaimReview({
+      claim,
+      documents,
+      customer,
+    });
 
-    console.log("USER ROLE:", req.user.role);
+    claim.aiResult = review;
+    claim.aiReviewStatus = "completed";
+    claim.aiReviewedAt = new Date();
+    claim.workflow_step = Math.max(claim.workflow_step || 1, 3);
+    await claim.save();
 
-    if (req.user.role === "customer") {
-      claims = await Claim.find({ user: req.user.userId })
-        .populate("user", "name email"); // 🔥 FIX
-    } else {
-      claims = await Claim.find()
-        .populate("user", "name email"); // 🔥 FIX
-    }
-   
-    res.json(claims);
-
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    return populateClaim(Claim.findById(claim._id));
+  } catch (error) {
+    claim.aiReviewStatus = "failed";
+    claim.aiReviewedAt = new Date();
+    claim.aiResult = {
+      recommendation: "manual_review",
+      confidence: 0.2,
+      summary: "Local OCR review could not be completed for this claim.",
+      amountCheck: {
+        status: "unclear",
+        message: "Amount validation could not be completed.",
+      },
+      identityCheck: {
+        status: "unclear",
+        message: "Identity validation could not be completed.",
+      },
+      aiChecks: documents.map((document) => ({
+        label: document.fileUrl?.split("/").pop(),
+        status: "received",
+        detail: "Document uploaded and ready for manual review.",
+      })),
+      redFlags: [error.message || "Local OCR review failed."],
+      guidance: ["Review the uploaded documents manually before deciding the claim."],
+      documents: [],
+    };
+    await claim.save();
+    return populateClaim(Claim.findById(claim._id));
   }
 };
 
+export const getClaims = async (req, res) => {
+  try {
+    let filter = {};
 
-// ✅ GET DOCUMENTS
+    if (req.user.role === "customer") {
+      filter = { user: req.user.userId };
+    } else if (req.user.role === "agent") {
+      filter = { agent: req.user.userId };
+    }
+
+    const claims = await populateClaim(
+      Claim.find(filter).sort({ createdAt: -1 })
+    );
+
+    res.json(claims);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getAssignedClaims = async (req, res) => {
+  try {
+    const claims = await populateClaim(
+      Claim.find({
+        agent: req.user.userId,
+        status: { $in: ["pending", "assigned", "in-progress"] },
+      }).sort({ createdAt: -1 })
+    );
+
+    res.json(claims);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getReviewedClaims = async (req, res) => {
+  try {
+    const claims = await populateClaim(
+      Claim.find({
+        agent: req.user.userId,
+        status: { $in: ["approved", "rejected", "paid"] },
+      }).sort({ reviewedAt: -1, createdAt: -1 })
+    );
+
+    res.json(claims);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const getClaimDocuments = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    const documents = await Document.find({ claim: id });
+    const documents = await Document.find({ claim: req.params.id }).sort({
+      createdAt: 1,
+    });
 
     res.json(documents);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: "Error fetching documents" });
   }
 };
 
-
-// ✅ CREATE CLAIM (FIXED 🔥 USER LINKED)
 export const createClaim = async (req, res) => {
   try {
     const { type, policyNumber, date, description, amount } = req.body;
 
-    const newClaim = new Claim({
-      user: req.user.userId, // 🔥 IMPORTANT FIX
+    const claim = await Claim.create({
+      user: req.user.userId,
       type,
       policyNumber,
       date,
       description,
-      amount,
-      status: "in-progress",
+      amount: Number(amount || 0),
+      status: "pending",
       workflow_step: 1,
+      aiReviewStatus: "not_requested",
     });
 
-    await newClaim.save();
+    let createdDocuments = [];
 
-    // ✅ SAVE DOCUMENTS
-    if (req.files && req.files.length > 0) {
-      const documents = req.files.map((file) => ({
-        claim: newClaim._id,
-        fileUrl: file.path,
-        fileType: file.mimetype,
-      }));
+    if (req.files?.length) {
+      createdDocuments = await Document.insertMany(
+        req.files.map((file) => ({
+          claim: claim._id,
+          fileUrl: file.path.replace(/\\/g, "/"),
+          fileType: file.mimetype,
+          uploadedBy: req.user.userId,
+        }))
+      );
 
-      await Document.insertMany(documents);
+      claim.documents = createdDocuments.map((document) => document._id);
+      await claim.save();
     }
 
-    res.status(201).json(newClaim);
-
+    const reviewedClaim = await attachReviewToClaim(claim._id);
+    res.status(201).json(reviewedClaim || claim);
   } catch (error) {
     console.error("Error creating claim:", error);
     res.status(500).json({ message: "Error creating claim" });
   }
 };
 
+export const rerunAiReview = async (req, res) => {
+  try {
+    const claim = await Claim.findById(req.params.id);
+    if (!claim) {
+      return res.status(404).json({ message: "Claim not found" });
+    }
 
-// ✅ UPDATE STATUS (AGENT)
+    const reviewedClaim = await attachReviewToClaim(req.params.id);
+    res.json(reviewedClaim);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const assignClaim = async (req, res) => {
+  try {
+    const { agentId } = req.body;
+
+    const claim = await Claim.findById(req.params.id);
+    if (!claim) {
+      return res.status(404).json({ message: "Claim not found" });
+    }
+
+    claim.agent = agentId;
+    claim.status = "assigned";
+    claim.assignedAt = new Date();
+    claim.workflow_step = Math.max(claim.workflow_step || 1, 3);
+    await claim.save();
+
+    const updatedClaim = await populateClaim(Claim.findById(claim._id));
+    res.json(updatedClaim);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const updateClaimStatus = async (req, res) => {
   try {
     const { status, notes } = req.body;
+    const claim = await Claim.findById(req.params.id);
 
-    const claim = await Claim.findByIdAndUpdate(
-      req.params.id,
-      {
-        status,
-        agentNotes: notes,
-        reviewedAt: new Date(),
-      },
-      { new: true }
-    );
+    if (!claim) {
+      return res.status(404).json({ message: "Claim not found" });
+    }
 
-    res.json(claim);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    if (String(claim.agent) !== String(req.user.userId)) {
+      return res.status(403).json({ message: "This claim is not assigned to you." });
+    }
+
+    claim.status = status;
+    claim.agentNotes = notes || "";
+    claim.reviewedAt = new Date();
+    claim.workflow_step = Math.max(claim.workflow_step || 1, 4);
+    await claim.save();
+
+    const updatedClaim = await populateClaim(Claim.findById(claim._id));
+    res.json(updatedClaim);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const markClaimPaid = async (req, res) => {
+  try {
+    const claim = await Claim.findById(req.params.id);
+
+    if (!claim) {
+      return res.status(404).json({ message: "Claim not found" });
+    }
+
+    if (claim.status !== "approved") {
+      return res.status(400).json({ message: "Only approved claims can be marked as paid." });
+    }
+
+    claim.status = "paid";
+    claim.paidAt = new Date();
+    claim.workflow_step = 5;
+    await claim.save();
+
+    const updatedClaim = await populateClaim(Claim.findById(claim._id));
+    res.json(updatedClaim);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getReports = async (_req, res) => {
+  try {
+    const claims = await Claim.find();
+    const reports = {
+      total: claims.length,
+      approved: claims.filter((claim) => ["approved", "paid"].includes(claim.status)).length,
+      rejected: claims.filter((claim) => claim.status === "rejected").length,
+      paid: claims.filter((claim) => claim.status === "paid").length,
+    };
+
+    res.json(reports);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };

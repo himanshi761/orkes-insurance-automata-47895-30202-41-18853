@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="540">
+  <rect width="100%" height="100%" fill="#f5f7fb" />
+  <text x="60" y="90" font-size="42" font-family="Arial" fill="#1f2937">Customer Identification</text>
+  <text x="60" y="170" font-size="28" font-family="Arial" fill="#111827">Name: cust3</text>
+  <text x="60" y="220" font-size="28" font-family="Arial" fill="#111827">Customer ID: CUST-3005</text>
+  <text x="60" y="270" font-size="28" font-family="Arial" fill="#111827">Policy Holder: cust3</text>
+  <text x="60" y="320" font-size="28" font-family="Arial" fill="#111827">Policy Number: AUTO-778812</text>
+  <text x="60" y="370" font-size="28" font-family="Arial" fill="#111827">Document Type: National ID</text>
+</svg>

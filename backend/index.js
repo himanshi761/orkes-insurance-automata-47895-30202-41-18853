@@ -46,7 +46,7 @@ app.use(cookieParser());
 app.use("/uploads", express.static("uploads"));
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [/^http:\/\/localhost:\d+$/],
     credentials: true,
   })
 );
@@ -58,7 +58,6 @@ app.use("/api/users",userRoutes);
 app.get("/", (req, res) => {
   res.send("Server is running 🚀");
 });
-app.use("/uploads", express.static("uploads"));
 connectDB()
   .then(() => {
     app.listen(port, () => {

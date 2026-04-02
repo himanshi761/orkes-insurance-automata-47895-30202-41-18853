@@ -174,12 +174,9 @@
 // };
 
 // export default DocumentsPage;
-
-
-
 import { useEffect, useState } from "react";
 import { FileText, Eye } from "lucide-react";
-import Sidebar from "../components/Sidebar";
+import { API_BASE_URL, getDocumentUrl } from "@/lib/aiScreening";
 
 const DocumentsPage = () => {
   const [docs, setDocs] = useState([]);
@@ -191,7 +188,7 @@ const DocumentsPage = () => {
       try {
         const token = localStorage.getItem("token");
 
-        const res = await fetch("http://localhost:8000/api/claims", {
+        const res = await fetch(`${API_BASE_URL}/api/claims`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -201,7 +198,7 @@ const DocumentsPage = () => {
 
         for (let claim of claims) {
           const docRes = await fetch(
-            `http://localhost:8000/api/claims/${claim._id}/documents`,
+            `${API_BASE_URL}/api/claims/${claim._id}/documents`,
             {
               headers: { Authorization: `Bearer ${token}` },
             }
@@ -235,8 +232,9 @@ const DocumentsPage = () => {
   }
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6">Documents</h1>
+    <div className="min-h-[calc(100vh-80px)] p-6 lg:p-8">
+      <div className="mx-auto max-w-7xl">
+      <h1 className="mb-6 text-3xl font-bold">Documents</h1>
 
       {docs.length === 0 ? (
         <p className="text-gray-500 text-center">
@@ -245,7 +243,7 @@ const DocumentsPage = () => {
       ) : (
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
           {docs.map((doc) => {
-            const fileUrl = `http://localhost:8000/${doc.fileUrl}`;
+            const fileUrl = getDocumentUrl(doc.fileUrl);
             const isImage = doc.fileType?.startsWith("image");
             const isPDF = doc.fileType?.includes("pdf");
 
@@ -328,6 +326,7 @@ const DocumentsPage = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

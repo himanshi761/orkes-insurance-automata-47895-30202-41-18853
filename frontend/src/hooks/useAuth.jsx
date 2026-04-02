@@ -1,112 +1,22 @@
-// import { useEffect, useState } from "react";
-// import { useNavigate } from "react-router-dom";
-
-// export const useAuth = () => {
-//   const [user, setUser] = useState(null);
-//   const [userRole, setUserRole] = useState(null);
-//   const [loading, setLoading] = useState(true);
-//   const navigate = useNavigate();
-
-//   // Initialize user from localStorage / token
-//   useEffect(() => {
-//     const initUser = async () => {
-//       const token = localStorage.getItem("authToken");
-//       if (!token) {
-//         setLoading(false);
-//         return;
-//       }
-
-//       try {
-//         const res = await fetch("/api/auth/me", {
-//           headers: {
-//             "Authorization": `Bearer ${token}`,
-//           },
-//         });
-
-//         if (!res.ok) throw new Error("Failed to fetch user");
-
-//         const data = await res.json();
-//         setUser(data.user);
-//         setUserRole(data.user.role);
-//       } catch (err) {
-//         console.error(err);
-//         localStorage.removeItem("authToken");
-//         setUser(null);
-//         setUserRole(null);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     initUser();
-//   }, []);
-
-//   // Sign up
-//   const signUp = async (email, password, fullName, role = "customer") => {
-//     try {
-//       const res = await fetch("/api/auth/signup", {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify({ email, password, fullName, role }),
-//       });
-
-//       const data = await res.json();
-
-//       if (res.ok) {
-//         localStorage.setItem("authToken", data.token);
-//         setUser(data.user);
-//         setUserRole(data.user.role);
-//       }
-
-//       return { data, error: data.error };
-//     } catch (error) {
-//       return { data: null, error };
-//     }
-//   };
-
-//   // Sign in
-//   const signIn = async (email, password) => {
-//     try {
-//       const res = await fetch("/api/auth/signin", {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify({ email, password }),
-//       });
-
-//       const data = await res.json();
-
-//       if (res.ok) {
-//         localStorage.setItem("authToken", data.token);
-//         setUser(data.user);
-//         setUserRole(data.user.role);
-//       }
-
-//       return { error: data.error };
-//     } catch (error) {
-//       return { error };
-//     }
-//   };
-
-//   // Sign out
-//   const signOut = () => {
-//     localStorage.removeItem("authToken");
-//     setUser(null);
-//     setUserRole(null);
-//     navigate("/auth");
-//   };
-
-//   return {
-//     user,
-//     userRole,
-//     loading,
-//     signUp,
-//     signIn,
-//     signOut,
-//   };
-// };
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+const getStoredUser = () => {
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+
+  if (!token || !role) return { user: null, role: null };
+
+  return {
+    user: {
+      _id: localStorage.getItem("userId") || "",
+      name: localStorage.getItem("userName") || "",
+      email: localStorage.getItem("userEmail") || "",
+      role,
+    },
+    role,
+  };
+};
 
 export const useAuth = () => {
   const [user, setUser] = useState(null);
@@ -114,56 +24,26 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Initialize user from token
   useEffect(() => {
-  const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role");
+    const stored = getStoredUser();
+    setUser(stored.user);
+    setUserRole(stored.role);
+    setLoading(false);
+  }, []);
 
-  console.log("AUTH INIT:", { token, role });
+  const storeUser = (authUser, token) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("role", authUser.role);
+    localStorage.setItem("userId", authUser._id || authUser.id || "");
+    localStorage.setItem("userName", authUser.name || "");
+    localStorage.setItem("userEmail", authUser.email || "");
+    setUser(authUser);
+    setUserRole(authUser.role);
+  };
 
-  if (token && role) {
-    setUser({});
-    setUserRole(role);
-  }
-
-  setLoading(false);
-}, []);
-    // useEffect(() => {
-    //   const initUser = async () => {
-    //     // const token = localStorage.getItem("authToken");
-    //     const token = localStorage.getItem("token");
-    //     if (!token) {
-    //       setLoading(false);
-    //       return;
-    //     }
-
-    //     try {
-    //       const res = await fetch("/api/auth/me", {
-    //         headers: { Authorization: `Bearer ${token}` },
-    //       });
-
-    //       if (!res.ok) throw new Error("Failed to fetch user");
-
-    //       const data = await res.json();
-    //       setUser(data.user);
-    //       setUserRole(data.user.role);
-    //     } catch (err) {
-    //       console.error(err);
-    //       localStorage.removeItem("authToken");
-    //       setUser(null);
-    //       setUserRole(null);
-    //     } finally {
-    //       setLoading(false);
-    //     }
-    //   };
-
-    //   initUser();
-    // }, []);
-
-  // Sign up
-  const signUp = async (name, email, password, role = "user") => {
+  const signUp = async (name, email, password, role = "customer") => {
     try {
-      const res = await fetch("/api/auth/register", {
+      const res = await fetch("http://localhost:8000/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password, role }),
@@ -171,22 +51,18 @@ export const useAuth = () => {
 
       const data = await res.json();
       if (res.ok) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("role", data.user.role);
-        setUser(data.user);
-        setUserRole(data.user.role);
+        storeUser(data.user, data.token);
       }
 
-      return { data, error: data.error };
+      return { data, error: data.message || data.error };
     } catch (error) {
-      return { data: null, error };
+      return { data: null, error: error.message };
     }
   };
 
-  // Sign in
   const signIn = async (email, password) => {
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await fetch("http://localhost:8000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -194,23 +70,21 @@ export const useAuth = () => {
 
       const data = await res.json();
       if (res.ok) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("role", data.user.role);
-        setUser(data.user);
-        setUserRole(data.user.role);
+        storeUser(data.user, data.token);
       }
 
-      return { error: data.error };
+      return { data, error: data.message || data.error };
     } catch (error) {
-      return { error };
+      return { data: null, error: error.message };
     }
   };
 
-  // Sign out
   const signOut = () => {
-    // localStorage.removeItem("authToken");
     localStorage.removeItem("token");
-localStorage.removeItem("role");
+    localStorage.removeItem("role");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userEmail");
     setUser(null);
     setUserRole(null);
     navigate("/auth");
