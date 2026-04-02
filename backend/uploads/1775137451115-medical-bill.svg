@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620">
+  <rect width="900" height="620" fill="#f6f7fb"/>
+  <rect x="60" y="40" width="780" height="540" rx="22" fill="#ffffff" stroke="#cfd5e4" stroke-width="3"/>
+  <text x="90" y="100" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#24324a">City Care Hospital</text>
+  <text x="90" y="140" font-family="Arial, sans-serif" font-size="22" fill="#54627a">Medical Expense Bill</text>
+  <text x="90" y="190" font-family="Arial, sans-serif" font-size="24" fill="#222">Patient: Priya Sharma</text>
+  <text x="90" y="225" font-family="Arial, sans-serif" font-size="24" fill="#222">Bill No: BILL-45021</text>
+  <text x="90" y="260" font-family="Arial, sans-serif" font-size="24" fill="#222">Visit Date: 2026-04-18</text>
+  <line x1="90" y1="295" x2="810" y2="295" stroke="#d9deea" stroke-width="2"/>
+  <text x="110" y="340" font-family="Arial, sans-serif" font-size="24" fill="#333">Consultation</text>
+  <text x="700" y="340" font-family="Arial, sans-serif" font-size="24" fill="#333">Rs. 2,500</text>
+  <text x="110" y="385" font-family="Arial, sans-serif" font-size="24" fill="#333">X-Ray</text>
+  <text x="700" y="385" font-family="Arial, sans-serif" font-size="24" fill="#333">Rs. 4,000</text>
+  <text x="110" y="430" font-family="Arial, sans-serif" font-size="24" fill="#333">Medicines</text>
+  <text x="700" y="430" font-family="Arial, sans-serif" font-size="24" fill="#333">Rs. 5,845</text>
+  <line x1="90" y1="470" x2="810" y2="470" stroke="#d9deea" stroke-width="2"/>
+  <text x="520" y="520" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#24324a">Total</text>
+  <text x="675" y="520" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#24324a">Rs. 12,345</text>
+  <text x="90" y="555" font-family="Arial, sans-serif" font-size="20" fill="#8a94aa">Sample bill for testing only.</text>
+</svg>

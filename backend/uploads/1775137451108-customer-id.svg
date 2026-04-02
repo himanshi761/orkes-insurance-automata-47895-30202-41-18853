@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="560" viewBox="0 0 900 560">
+  <rect width="900" height="560" fill="#f4efe6"/>
+  <rect x="40" y="40" width="820" height="480" rx="24" fill="#fffdf8" stroke="#c89b2b" stroke-width="4"/>
+  <text x="70" y="110" font-family="Arial, sans-serif" font-size="36" font-weight="700" fill="#3d2e16">iClaim Sample Customer ID</text>
+  <rect x="70" y="145" width="150" height="180" rx="16" fill="#ead6b0"/>
+  <text x="95" y="240" font-family="Arial, sans-serif" font-size="26" fill="#6b5328">PHOTO</text>
+  <text x="270" y="180" font-family="Arial, sans-serif" font-size="28" fill="#333">Name: Priya Sharma</text>
+  <text x="270" y="225" font-family="Arial, sans-serif" font-size="28" fill="#333">DOB: 1992-08-14</text>
+  <text x="270" y="270" font-family="Arial, sans-serif" font-size="28" fill="#333">Customer ID: CUST-10245</text>
+  <text x="270" y="315" font-family="Arial, sans-serif" font-size="28" fill="#333">Policy No: AUTO-778812</text>
+  <text x="70" y="395" font-family="Arial, sans-serif" font-size="26" fill="#333">Address: 24 Green Park Road, Pune, Maharashtra</text>
+  <text x="70" y="440" font-family="Arial, sans-serif" font-size="26" fill="#333">Email: priya.sharma@example.com</text>
+  <text x="70" y="485" font-family="Arial, sans-serif" font-size="22" fill="#8b6b2e">Sample file for testing only. Not a real ID.</text>
+</svg>
